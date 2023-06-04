@@ -26,5 +26,14 @@ def reactant_B():
 reactant_A2 = reactant_A()
 reactant_B2 = reactant_B()
 
-product_Y = main.react_ai(reactant_A2, reactant_B2)
-st.write(product_Y)
+def react_ab():
+
+    if reactant_A2 and reactant_B2:
+        product_Y = main.react_ai(reactant_A2, reactant_B2)
+        st.write(product_Y)
+    else:
+        st.write("Waiting...")
+    
+    return react_ab()
+
+react_ab()
