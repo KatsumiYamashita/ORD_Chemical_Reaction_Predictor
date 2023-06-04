@@ -1,6 +1,9 @@
 import streamlit as st
 import main
 
+from rdkit import Chem
+from rdkit.Chem import Drew
+
 st.title("React: A + B → Y")
 
 def reactant_A():
