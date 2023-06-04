@@ -33,7 +33,7 @@ def react_ab():
         st.write(product_Y)
     else:
         st.write("Waiting...")
-    
-    return react_ab()
 
 react_ab()
+
+

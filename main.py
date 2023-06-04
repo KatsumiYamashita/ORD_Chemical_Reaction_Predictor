@@ -1,7 +1,7 @@
 import openai
 
 openai.api_key = \
-    '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'
+    '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'
 
 def react_ai(A: str, B: str):
 
@@ -63,3 +63,5 @@ def react_ai(A: str, B: str):
     
 #sub_A = "CC1=NN(C=C1NC2=NC=C(C(=C2)I)C(F)(F)F)C"
 #sub_B = "CONC(=O)C1=CC=CC=C1N"
+
+#react_ai(sub_A, sub_B)
