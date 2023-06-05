@@ -33,27 +33,44 @@ def reactant_B():
     return reactant_B
 
 # 化合物ABを変数に格納
-reactant_A = reactant_A()
-reactant_B = reactant_B()
+reactant_A2 = reactant_A()
+reactant_B2 = reactant_B()
 
-# 化合物ABをSMILESからMolオブジェクトへ変換
-mol_A = Chem.MolFromSmiles(reactant_A)
-mol_B = Chem.MolFromSmiles(reactant_B)
-
-# molオブジェクトからimageを生成
-img_A = Draw.MolToImage(mol_A)
-img_B = Draw.MolToImage(mol_B)
-st.image(img_A, use_column_width=True)
-st.image(img_B, use_column_width=True)
-
+# 反応物Yを探索する関数を定義
 def react_ab():
 
-    if reactant_A and reactant_B:
-        product_Y = main.react_ai(reactant_A, reactant_B)
-        st.write(product_Y)
+    if reactant_A2 and reactant_B2:
+        answer = main.react_ai(reactant_A2, reactant_B2)
+        st.write(answer)
+        #product_Y = 
     else:
         st.write("Waiting...")
 
 react_ab()
+product_Y2 = react_ab()
+
+# 化合物ABYをSMILESからMolオブジェクトへ変換
+#mol_A = Chem.MolFromSmiles(reactant_A2)
+#mol_B = Chem.MolFromSmiles(reactant_B2)
+#mol_Y = Chem.MolFromSmiles(product_Y2)
+
+# molオブジェクトからimageを生成
+def A_B_Y():
+
+    if reactant_A2 and reactant_B2 and product_Y2:
+        drawer = rdMolDraw2D.MolDraw2DSVG(660,350)
+        rxn = Reactions.ReactionFromSmarts(f'{reactant_A2}.{reactant_B2}>>{product_Y2}', useSmiles=True)
+        drawer.DrawReaction(rxn)
+        drawer.FinishDrawing()
+        svg_rxn = drawer.GetDrawingText()
+        st.write("A + B → Y")
+        st.image(svg_rxn, use_column_width=True)
+    else:
+        pass
+   
+A_B_Y()
+
+
+
 
 
