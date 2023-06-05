@@ -1,0 +1,4 @@
+streamlit で使えそうなやつ
+・https://blog.streamlit.io/introducing-a-chemical-molecule-component-for-your-streamlit-apps/
+・https://discuss.streamlit.io/t/draw-2d-chemical-structure-inside-stramlit/38395
+・https://towardsdatascience.com/molecular-visualization-in-streamlit-using-rdkit-and-py3dmol-4e8e63488eb8
