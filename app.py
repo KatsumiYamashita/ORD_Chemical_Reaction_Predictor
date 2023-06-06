@@ -45,9 +45,9 @@ def react_ab():
         #product_Y = 
     else:
         st.write("Waiting...")
+    return react_ab
 
 react_ab()
-product_Y2 = react_ab()
 
 # 化合物ABYをSMILESからMolオブジェクトへ変換
 #mol_A = Chem.MolFromSmiles(reactant_A2)
@@ -67,8 +67,9 @@ def A_B_Y():
         st.image(svg_rxn, use_column_width=True)
     else:
         pass
+    return A_B_Y
    
-A_B_Y()
+
 
 
 
