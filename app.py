@@ -6,6 +6,7 @@ from rdkit import Chem
 from rdkit.Chem import Draw, rdChemReactions as Reactions
 from rdkit.Chem.Draw import rdMolDraw2D
 from IPython.display import SVG
+from context import training_dataset
 
 # アプリケーションタイトル
 st.title("React: A + B → Y")
@@ -40,7 +41,7 @@ reactant_B2 = reactant_B()
 def react_ab():
 
     if reactant_A2 and reactant_B2:
-        answer = main.react_ai(reactant_A2, reactant_B2)
+        answer = main.get_prodY_SMILES(reactant_A2, reactant_B2, training_dataset)
         st.write(answer)
         #product_Y = 
     else:
