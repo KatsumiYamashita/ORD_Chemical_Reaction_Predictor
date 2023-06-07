@@ -12,43 +12,45 @@ from context import training_dataset
 st.title("React: A + B → Y")
 
 # 化合物Aを入力する関数の定義
-def reactant_A():
+def enter_reactant_A():
 
-    reactant_A = st.text_input("Enter reactant A")
+    reactant_A = st.text_input("Enter reactant A", key="reactant_A")
 
     if reactant_A:
-        pass #st.write(f"reactant A is :{reactant_A}")
+        st.write(f"reactant A is :{reactant_A}")
     else:
         st.write("Please enter reactant A.")
     return reactant_A
 
 # 化合物Bを入力する関数の定義
-def reactant_B():
+def enter_reactant_B():
 
-    reactant_B = st.text_input("Enter reactant B")
+    reactant_B = st.text_input("Enter reactant B", key="reactant_B")
 
     if reactant_B:
-        pass #st.write(f"reactant B is :{reactant_B}")
+        st.write(f"reactant B is :{reactant_B}")
     else:
         st.write("Please enter reactant B.")
     return reactant_B
 
 # 化合物ABを変数に格納
-reactant_A2 = reactant_A()
-reactant_B2 = reactant_B()
+entered_reactant_A = enter_reactant_A()
+entered_reactant_B = enter_reactant_B()
 
 # 反応物Yを探索する関数を定義
-def react_ab():
+def react_AB():
 
-    if reactant_A2 and reactant_B2:
-        answer = main.get_prodY_SMILES(reactant_A2, reactant_B2, training_dataset)
-        st.write(answer)
-        #product_Y = 
+    if entered_reactant_A and entered_reactant_B:
+        generated_product_Y = main.get_prodY_SMILES(entered_reactant_A, \
+                                        entered_reactant_B, \
+                                        training_dataset)
+        st.write(generated_product_Y)
+        #product_Y = gpt のモデルによって回答の形式が異なる. SMILESだけ取得されるわけではないから難しい
     else:
         st.write("Waiting...")
-    return react_ab
+    return generated_product_Y
 
-react_ab()
+product_Y = react_AB()
 
 # 化合物ABYをSMILESからMolオブジェクトへ変換
 #mol_A = Chem.MolFromSmiles(reactant_A2)
@@ -56,19 +58,21 @@ react_ab()
 #mol_Y = Chem.MolFromSmiles(product_Y2)
 
 # molオブジェクトからimageを生成
-def A_B_Y():
+def show_rxn_formula(A, B, Y):
 
-    if reactant_A2 and reactant_B2 and product_Y2:
-        drawer = rdMolDraw2D.MolDraw2DSVG(660,350)
-        rxn = Reactions.ReactionFromSmarts(f'{reactant_A2}.{reactant_B2}>>{product_Y2}', useSmiles=True)
-        drawer.DrawReaction(rxn)
-        drawer.FinishDrawing()
-        svg_rxn = drawer.GetDrawingText()
-        st.write("A + B → Y")
-        st.image(svg_rxn, use_column_width=True)
-    else:
-        pass
-    return A_B_Y
+    drawer = rdMolDraw2D.MolDraw2DSVG(660,350)
+    rxn = Reactions.ReactionFromSmarts(f'{A}.{B}>>{Y}',\
+                                        useSmiles=True)
+    drawer.DrawReaction(rxn)
+    drawer.FinishDrawing()
+    svg_rxn = drawer.GetDrawingText()
+    st.write("A + B → Y")
+    st.image(svg_rxn, use_column_width=True)
+
+    return show_rxn_formula
+
+if entered_reactant_A and entered_reactant_B and product_Y:
+    show_rxn_formula(entered_reactant_A, entered_reactant_B, product_Y)
    
 
 
