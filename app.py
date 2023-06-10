@@ -65,13 +65,14 @@ def show_rxn_formula(A, B, Y):
 api_key = st.text_input("API keyを入力してください")
 openai.api_key = api_key
 
-# 化合物ABを変数に格納
-if api_key:
-    entered_reactant_A = enter_reactant_A()
-    entered_reactant_B = enter_reactant_B()
+# 化合物ABを変数に格納(関数の呼び出し)
+entered_reactant_A = enter_reactant_A()
+entered_reactant_B = enter_reactant_B()
 
+# 化合物ABを反応させる (Yを予測させる)
 if entered_reactant_A and entered_reactant_B:
-    product_Y = react_AB()
+    generated_product_Y = react_AB()
 
-#if entered_reactant_A and entered_reactant_B and product_Y:
-    show_rxn_formula(entered_reactant_A, entered_reactant_B, product_Y)
+# A, B, およびYの反応式を表示させる
+if entered_reactant_A and entered_reactant_B and generated_product_Y:
+    show_rxn_formula(entered_reactant_A, entered_reactant_B, generated_product_Y)
