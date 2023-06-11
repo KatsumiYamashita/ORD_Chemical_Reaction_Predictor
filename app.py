@@ -62,7 +62,7 @@ def show_rxn_formula(A, B, Y):
     return show_rxn_formula
 
 #api_keyの入力
-api_key = st.text_input("API keyを入力してください")
+api_key = st.text_input("API keyを入力してください", type='password')
 openai.api_key = api_key
 
 # 化合物ABを変数に格納(関数の呼び出し)
