@@ -16,22 +16,26 @@ st.title("React: A + B → Y")
 # 化合物Aを入力する関数の定義
 def enter_reactant_A():
 
-    type_A = st.selectbox("type reactant A", ['Name', 'SMILES'])
+    type_A = st.sidebar.\
+                selectbox("type reactant A", ['Name', 'SMILES'])
     reactant_A = None
     mol_A = None
 
     if type_A == "SMILES":
-        entered_A = st.text_input("Enter reactant A", key="reactant_A") # AのSMILESを入力させる
+        entered_A = st.sidebar.\
+                        text_input("Enter reactant A", key="reactant_A") # AのSMILESを入力させる
         mol_A = Chem.MolFromSmiles(entered_A)
         if mol_A == None:
-            st.write('<span style="color: red;">Error</span>', \
+            st.sidebar.\
+                write('<span style="color: red;">Error</span>', \
                      ": Please check entered 'reactant A' type.", \
                     unsafe_allow_html=True)
         else:
             reactant_A = entered_A
         
     elif type_A == "Name":
-        entered_A = st.text_input("Enter reactant A", key="reactant_A") # AのIUPAC名を入力させる
+        entered_A = st.sidebar.\
+                        text_input("Enter reactant A", key="reactant_A") # AのIUPAC名を入力させる
         if entered_A:    
             entered_A_pcp_li = pcp.get_compounds(entered_A, 'name') # AのIUPAC名からPCPで化合物情報を取得
             if len(entered_A_pcp_li) == 1:
@@ -39,7 +43,8 @@ def enter_reactant_A():
                 reactant_A = entered_A_pcp.canonical_smiles   # AのSMILESを取得
                 mol_A = Chem.MolFromSmiles(reactant_A) # molオブジェクトの生成
             else: 
-                st.write('<span style="color: red;">Error</span>', \
+                st.sidebar.\
+                    write('<span style="color: red;">Error</span>', \
                      ": Please check entered 'reactant A' type.", \
                     unsafe_allow_html=True)
 
@@ -52,37 +57,43 @@ def enter_reactant_A():
         drawer.FinishDrawing()
         # 描画
         svg_A = drawer.GetDrawingText()
-        st.image(svg_A, use_column_width=True)
+        st.sidebar.\
+            image(svg_A, use_column_width=True)
 
     return reactant_A
 
 # 化合物Bを入力する関数の定義
 def enter_reactant_B():
 
-    type_B = st.selectbox("type reactant B", ['Name', 'SMILES'])
+    type_B = st.sidebar.\
+                selectbox("type reactant B", ['Name', 'SMILES'])
     reactant_B = None
     mol_B = None
 
     if type_B == "SMILES":
-        entered_B = st.text_input("Enter reactant B", key="reactant_B") # BのSMILESを入力させる
+        entered_B = st.sidebar.\
+                        text_input("Enter reactant B", key="reactant_B") # BのSMILESを入力させる
         mol_B = Chem.MolFromSmiles(entered_B)
         if mol_B == None:
-            st.write('<span style="color: red;">Error</span>', \
+            st.sidebar.\
+                    write('<span style="color: red;">Error</span>', \
                      ": Please check entered 'reactant B' type.", \
                     unsafe_allow_html=True)
         else:
             reactant_B = entered_B
         
     elif type_B == "Name":
-        entered_B = st.text_input("Enter reactant B", key="reactant_B") # AのIUPAC名を入力させる
+        entered_B = st.sidebar.\
+                        text_input("Enter reactant B", key="reactant_B") # AのIUPAC名を入力させる
         if entered_B:    
             entered_B_pcp_li = pcp.get_compounds(entered_B, 'name') # AのIUPAC名からPCPで化合物情報を取得
             if len(entered_B_pcp_li) == 1:
                 entered_B_pcp = entered_B_pcp_li[0]
                 reactant_B = entered_B_pcp.canonical_smiles   # AのSMILESを取得
-                mol_A = Chem.MolFromSmiles(reactant_B) # molオブジェクトの生成
+                mol_B = Chem.MolFromSmiles(reactant_B) # molオブジェクトの生成
             else: 
-                st.write('<span style="color: red;">Error</span>', \
+                st.sidebar.\
+                    write('<span style="color: red;">Error</span>', \
                      ": Please check entered 'reactant B' type.", \
                     unsafe_allow_html=True)
 
@@ -95,7 +106,8 @@ def enter_reactant_B():
         drawer.FinishDrawing()
         # 描画
         svg_B = drawer.GetDrawingText()
-        st.image(svg_B, use_column_width=True)
+        st.sidebar.\
+            image(svg_B, use_column_width=True)
 
     return reactant_B
 
