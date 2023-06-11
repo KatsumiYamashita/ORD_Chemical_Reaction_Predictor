@@ -51,13 +51,19 @@ def react_AB():
 def show_rxn_formula(A, B, Y):
 
     drawer = rdMolDraw2D.MolDraw2DSVG(660,300)
-    rxn = Reactions.ReactionFromSmarts(f'{A}.{B}>>{Y}',\
+
+    try:
+        rxn = Reactions.ReactionFromSmarts(f'{A}.{B}>>{Y}',\
                                         useSmiles=True)
-    drawer.DrawReaction(rxn)
-    drawer.FinishDrawing()
-    svg_rxn = drawer.GetDrawingText()
-    st.write("A + B → Y")
-    st.image(svg_rxn, use_column_width=True)
+        drawer.DrawReaction(rxn)
+        drawer.FinishDrawing()
+        svg_rxn = drawer.GetDrawingText()
+        st.write("A + B → Y")
+        st.image(svg_rxn, use_column_width=True)
+
+    except ValueError as e:
+        st.write("Impossible product Y was generated")
+        st.write(str(e)) 
 
     return show_rxn_formula
 
