@@ -1,7 +1,8 @@
 # モジュールのインポート
-import streamlit as st
 import main
 import openai
+import pubchempy as pcp
+import streamlit as st
 
 from rdkit import Chem
 from rdkit.Chem import Draw, rdChemReactions as Reactions
@@ -15,23 +16,87 @@ st.title("React: A + B → Y")
 # 化合物Aを入力する関数の定義
 def enter_reactant_A():
 
-    reactant_A = st.text_input("Enter reactant A", key="reactant_A")
+    type_A = st.selectbox("type reactant A", ['Name', 'SMILES'])
+    reactant_A = None
+    mol_A = None
 
-    if reactant_A:
-        st.write(f"reactant A is :{reactant_A}")
-    else:
-        st.write("Please enter reactant A.")
+    if type_A == "SMILES":
+        entered_A = st.text_input("Enter reactant A", key="reactant_A") # AのSMILESを入力させる
+        mol_A = Chem.MolFromSmiles(entered_A)
+        if mol_A == None:
+            st.write('<span style="color: red;">Error</span>', \
+                     ": Please check entered 'reactant A' type.", \
+                    unsafe_allow_html=True)
+        else:
+            reactant_A = entered_A
+        
+    elif type_A == "Name":
+        entered_A = st.text_input("Enter reactant A", key="reactant_A") # AのIUPAC名を入力させる
+        if entered_A:    
+            entered_A_pcp_li = pcp.get_compounds(entered_A, 'name') # AのIUPAC名からPCPで化合物情報を取得
+            if len(entered_A_pcp_li) == 1:
+                entered_A_pcp = entered_A_pcp_li[0]
+                reactant_A = entered_A_pcp.canonical_smiles   # AのSMILESを取得
+                mol_A = Chem.MolFromSmiles(reactant_A) # molオブジェクトの生成
+            else: 
+                st.write('<span style="color: red;">Error</span>', \
+                     ": Please check entered 'reactant A' type.", \
+                    unsafe_allow_html=True)
+
+    if mol_A:
+        # コンテナの準備
+        drawer = rdMolDraw2D.MolDraw2DSVG(100,100)
+        tmol_A = rdMolDraw2D.PrepareMolForDrawing(mol_A)
+
+        drawer.DrawMolecule(tmol_A)
+        drawer.FinishDrawing()
+        # 描画
+        svg_A = drawer.GetDrawingText()
+        st.image(svg_A, use_column_width=True)
+
     return reactant_A
 
 # 化合物Bを入力する関数の定義
 def enter_reactant_B():
 
-    reactant_B = st.text_input("Enter reactant B", key="reactant_B")
+    type_B = st.selectbox("type reactant B", ['Name', 'SMILES'])
+    reactant_B = None
+    mol_B = None
 
-    if reactant_B:
-        st.write(f"reactant B is :{reactant_B}")
-    else:
-        st.write("Please enter reactant B.")
+    if type_B == "SMILES":
+        entered_B = st.text_input("Enter reactant B", key="reactant_B") # BのSMILESを入力させる
+        mol_B = Chem.MolFromSmiles(entered_B)
+        if mol_B == None:
+            st.write('<span style="color: red;">Error</span>', \
+                     ": Please check entered 'reactant B' type.", \
+                    unsafe_allow_html=True)
+        else:
+            reactant_B = entered_B
+        
+    elif type_B == "Name":
+        entered_B = st.text_input("Enter reactant B", key="reactant_B") # AのIUPAC名を入力させる
+        if entered_B:    
+            entered_B_pcp_li = pcp.get_compounds(entered_B, 'name') # AのIUPAC名からPCPで化合物情報を取得
+            if len(entered_B_pcp_li) == 1:
+                entered_B_pcp = entered_B_pcp_li[0]
+                reactant_B = entered_B_pcp.canonical_smiles   # AのSMILESを取得
+                mol_A = Chem.MolFromSmiles(reactant_B) # molオブジェクトの生成
+            else: 
+                st.write('<span style="color: red;">Error</span>', \
+                     ": Please check entered 'reactant B' type.", \
+                    unsafe_allow_html=True)
+
+    if mol_B:
+        # コンテナの準備
+        drawer = rdMolDraw2D.MolDraw2DSVG(100,100)
+        tmol_B = rdMolDraw2D.PrepareMolForDrawing(mol_B)
+
+        drawer.DrawMolecule(tmol_B)
+        drawer.FinishDrawing()
+        # 描画
+        svg_B = drawer.GetDrawingText()
+        st.image(svg_B, use_column_width=True)
+
     return reactant_B
 
 # 反応物Yを探索する関数を定義
