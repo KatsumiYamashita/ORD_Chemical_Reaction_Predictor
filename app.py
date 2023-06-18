@@ -11,14 +11,19 @@ from streamlit_ketcher import st_ketcher
 def enter_reactants():
 
     DEFAULT_A = r"CC1=NN(C=C1NC2=NC=C(C(=C2)I)C(F)(F)F)C"
-    entered_A = st.text_input("Enter reactant A 'SMILES'", DEFAULT_A)
-    reactant_A = st_ketcher(entered_A)
-    st.markdown(f"reactant A is ``{reactant_A}``")
-
     DEFAULT_B = r"CONC(=O)C1=CC=CC=C1N"
-    entered_B = st.text_input("Enter reactant B 'SMILES'", DEFAULT_B)
-    reactant_B = st_ketcher(entered_B)
-    st.markdown(f"reactant B is: ``{reactant_B}``")
+
+    col_A, col_B = st.columns(2)
+
+    with col_A:
+        entered_A = st.text_input("Enter reactant A 'SMILES'", DEFAULT_A)
+        reactant_A = st_ketcher(entered_A)
+        st.markdown(f"reactant A is ``{reactant_A}``")
+
+    with col_B:
+        entered_B = st.text_input("Enter reactant B 'SMILES'", DEFAULT_B)
+        reactant_B = st_ketcher(entered_B)
+        st.markdown(f"reactant B is: ``{reactant_B}``")
 
     return reactant_A, reactant_B
 
@@ -35,6 +40,7 @@ def react_AB():
         st.write("Waiting...")
     return generated_product_Y
 
+# 反応式を表示させる関数を定義
 def show_rxn_formula(A, B, Y):
 
     rxn = f"{A}.{B}>>{Y}"
@@ -43,6 +49,7 @@ def show_rxn_formula(A, B, Y):
     return show_rxn_formula
 
 # アプリケーションタイトル
+st.set_page_config(layout="wide")
 st.title("React: A + B → Y")
 
 #api_keyの入力
