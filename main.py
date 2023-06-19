@@ -1,5 +1,10 @@
 import openai
+import pandas as pd
 import re
+
+from rdkit import rdBase, Chem, DataStructs
+from rdkit.Chem import AllChem
+from rdkit.Chem.Fingerprints import FingerprintMols
 
 def get_prodY_SMILES(test_A_smiles,\
                      test_B_smiles,\
@@ -32,7 +37,39 @@ def get_prodY_SMILES(test_A_smiles,\
         temperature=0,
         )
     
+    # gptのresponseからYの候補が含まれている部分を抜き出す
     response_text = response["choices"][0]["message"]["content"]
-    pattern = r":\s(.+)" #テンプレートの作成
-    product_Y_candidates = re.findall(pattern, response_text) #テンプレートをもとにSMILESを抜き出す
-    return product_Y_candidates
+    #テンプレートの作成
+    pattern = r":\s(.+)" 
+    #テンプレートをもとにSMILESを抜き出す→リスト型
+    product_Y_candidates = re.findall(pattern, response_text)
+    #リスト型→データフレーム
+    df_product_Y_candidates = pd.DataFrame({"Y_candidates":product_Y_candidates})
+    #Molオブジェクトの生成
+    df_product_Y_candidates["Y_candidates_mol"] =\
+        df_product_Y_candidates["Y_candidates"].\
+        apply(lambda smiles: Chem.MolFromSmiles(smiles))
+    #maccs_fpsの生成
+    df_product_Y_candidates["Y_candidates_maccs_fps"] =\
+        df_product_Y_candidates["Y_candidates_mol"].\
+        apply(lambda mol: AllChem.GetMACCSKeysFingerprint(mol)\
+        if mol is not None else None
+        )
+    
+    test_A_mol = Chem.MolFromSmiles(test_A_smiles)
+    test_A_maccs_fps = AllChem.GetMACCSKeysFingerprint(test_A_mol)
+
+    #テスト化合物Aを基準にタニモト係数を計算
+    df_product_Y_candidates["Y_candidates_tnmt"] = \
+        df_product_Y_candidates["Y_candidates_maccs_fps"].\
+        apply(lambda maccs_fps: DataStructs.TanimotoSimilarity(test_A_maccs_fps, maccs_fps)\
+        if maccs_fps is not None else None
+        )
+    
+    #計算したタニモト係数を降順に並べる
+    df_product_Y_candidates.sort_values("Y_candidates_tnmt", ascending=False)
+
+
+    df_Y = df_product_Y_candidates.iloc[:, 0].reset_index()
+
+    return df_Y
