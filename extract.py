@@ -62,6 +62,12 @@ def generate_maccs_fps_df(df_mol_ABY, df_smiles_ABY):
 
     return df_maccs_fps_ABY, df_smiles_maccs_fps
 
+def generate_maccs_fps(mol):
+    maccs_fps = AllChem.GetMACCSKeysFingerprint(mol)
+    BitVect_Text = DataStructs.BitVectToText(maccs_fps)
+    count = BitVect_Text.count("1")
+    return maccs_fps, count
+
 def extract_training_data(df_smiles_maccs_fps,\
                             df_maccs_fps_ABY,\
                             reactant_A_maccs_fps,\
@@ -78,18 +84,20 @@ def extract_training_data(df_smiles_maccs_fps,\
     DataStructs.TanimotoSimilarity(reactant_B_maccs_fps, maccs_fps))
 
     # 化合物Aのタニモト係数でソートする
-    df_smiles_maccs_fps_tnmt = df_smiles_maccs_fps.sort_values("tnmt_A", ascending=False)
+    df_smiles_maccs_fps_tnmt = df_smiles_maccs_fps\
+                                .sort_values("tnmt_B", ascending=False)\
+                                .sort_values("tnmt_A", ascending=False)
     # ソートしたdfから化合物Aに対するタニモト係数上位35個を抜き取る
     df_rank_tnmt_A_35 = df_smiles_maccs_fps_tnmt.iloc[:number, 0:3]
     # 抜き取ったdfからstr型のトレーニングデータを作る
-    training_dataset_rank_tnmt_A = \
+    training_dataset= \
     "This is training dataset (A + B → Y):\n\
     "
     for _, row in df_rank_tnmt_A_35.iterrows():
         template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
-        training_dataset_rank_tnmt_A += template
+        training_dataset += template
     
-    return training_dataset_rank_tnmt_A
+    return training_dataset
 
 
 
