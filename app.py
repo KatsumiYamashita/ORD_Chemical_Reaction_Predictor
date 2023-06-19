@@ -40,18 +40,13 @@ def show_rxn_formula(A, B, Y):
 
     return show_rxn_formula
 
-def generate_maccs_fps(mol):
-    maccs_fps = AllChem.GetMACCSKeysFingerprint(mol)
-    BitVect_Text = DataStructs.BitVectToText(maccs_fps)
-    count = BitVect_Text.count("1")
-    return maccs_fps, count
-
 # アプリケーションタイトル
 st.set_page_config(layout="wide")
 st.title("React: A + B → Y")
 
 # データセットのインポート
-ord_dataset_id = "ord_dataset-00005539a1e04c809a9a78647bea649c"
+ord_dataset_id = \
+    "ord_dataset-00005539a1e04c809a9a78647bea649c"
 
 df_smiles_ABY,\
 df_mol_ABY,\
@@ -64,7 +59,8 @@ df_smiles_maccs_fps\
 = extract.generate_maccs_fps_df(df_mol_ABY, df_smiles_ABY)
 
 # api_keyの入力
-api_key = st.text_input("API keyを入力してください", type='password')
+api_key = st.text_input("API keyを入力してください", \
+                        type='password')
 openai.api_key = api_key
 
 # テスト化合物ABを変数に格納(関数の呼び出し)
@@ -77,11 +73,11 @@ reactant_B_mol \
 # テスト化合物ABのmaccs fpsを生成
 reactant_A_maccs_fps,\
 reactant_A_count_one \
-= generate_maccs_fps(reactant_A_mol)
+= extract.generate_maccs_fps(reactant_A_mol)
 
 reactant_B_maccs_fps,\
 reactant_B_count_one \
-= generate_maccs_fps(reactant_B_mol)
+= extract.generate_maccs_fps(reactant_B_mol)
 
 # トレーニングデータの取得
 training_dataset\
@@ -93,29 +89,22 @@ training_dataset\
 
 # 化合物ABを反応させる (Yを予測させる)
 if api_key:
-    product_Y_candidates \
-    = main.get_prodY_SMILES(reactant_A_smiles, \
+
+    col_A, col_B = st.columns(2, gap="large")
+    df_Y =\
+    main.get_prodY_SMILES(reactant_A_smiles, \
                             reactant_B_smiles, \
                             training_dataset)
     
-    df_product_Y_candidates = pd.DataFrame\
-                                ({"Y_candidates":product_Y_candidates})
-    try:
-        df_product_Y_candidates["Y_candidates_mol"] = \
-            df_product_Y_candidates["Y_candidates"].\
-            apply(lambda smiles: Chem.MolFromSmiles(smiles))
-        df_product_Y_candidates["Y_candidates_maccs_fps"] =\
-            df_product_Y_candidates["Y_candidates_mol"].\
-            apply(lambda mol: AllChem.GetMACCSKeysFingerprint(mol))
-        df_product_Y_candidates["Y_candidates_tnmt"] = \
-            df_product_Y_candidates["Y_candidates_maccs_fps"].\
-            apply(lambda maccs_fps: DataStructs.TanimotoSimilarity(test_{sort}_maccs_fps, maccs_fps))
-    df_product_Y_candidates.sort_values("Y_candidates_tnmt", ascending=False)
+    best_Y = df_Y.iloc[0, 1]
 
-    if generated_product_Y:
+    with col_A:
+        st.dataframe(df_Y)
+
+    with col_B:
         show_rxn_formula(reactant_A_smiles, \
                         reactant_B_smiles, \
-                        generated_product_Y) 
+                        best_Y) 
 
 else:
     pass
