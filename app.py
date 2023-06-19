@@ -40,6 +40,12 @@ def show_rxn_formula(A, B, Y):
 
     return show_rxn_formula
 
+def generate_maccs_fps(mol):
+    maccs_fps = AllChem.GetMACCSKeysFingerprint(mol)
+    BitVect_Text = DataStructs.BitVectToText(maccs_fps)
+    count = BitVect_Text.count("1")
+    return maccs_fps, count
+
 # アプリケーションタイトル
 st.set_page_config(layout="wide")
 st.title("React: A + B → Y")
@@ -69,11 +75,16 @@ reactant_B_mol \
 = enter_reactants()
 
 # テスト化合物ABのmaccs fpsを生成
-reactant_A_maccs_fps = AllChem.GetMACCSKeysFingerprint(reactant_A_mol)
-reactant_B_maccs_fps = AllChem.GetMACCSKeysFingerprint(reactant_B_mol)
+reactant_A_maccs_fps,\
+reactant_A_count_one \
+= generate_maccs_fps(reactant_A_mol)
+
+reactant_B_maccs_fps,\
+reactant_B_count_one \
+= generate_maccs_fps(reactant_B_mol)
 
 # トレーニングデータの取得
-training_dataset_rank_tnmt_A\
+training_dataset\
 = extract.extract_training_data(df_smiles_maccs_fps,\
                                 df_maccs_fps_ABY,\
                                 reactant_A_maccs_fps,\
@@ -82,10 +93,25 @@ training_dataset_rank_tnmt_A\
 
 # 化合物ABを反応させる (Yを予測させる)
 if api_key:
-    generated_product_Y \
+    product_Y_candidates \
     = main.get_prodY_SMILES(reactant_A_smiles, \
                             reactant_B_smiles, \
-                            training_dataset_rank_tnmt_A)
+                            training_dataset)
+    
+    df_product_Y_candidates = pd.DataFrame\
+                                ({"Y_candidates":product_Y_candidates})
+    try:
+        df_product_Y_candidates["Y_candidates_mol"] = \
+            df_product_Y_candidates["Y_candidates"].\
+            apply(lambda smiles: Chem.MolFromSmiles(smiles))
+        df_product_Y_candidates["Y_candidates_maccs_fps"] =\
+            df_product_Y_candidates["Y_candidates_mol"].\
+            apply(lambda mol: AllChem.GetMACCSKeysFingerprint(mol))
+        df_product_Y_candidates["Y_candidates_tnmt"] = \
+            df_product_Y_candidates["Y_candidates_maccs_fps"].\
+            apply(lambda maccs_fps: DataStructs.TanimotoSimilarity(test_{sort}_maccs_fps, maccs_fps))
+    df_product_Y_candidates.sort_values("Y_candidates_tnmt", ascending=False)
+
     if generated_product_Y:
         show_rxn_formula(reactant_A_smiles, \
                         reactant_B_smiles, \
