@@ -16,10 +16,16 @@ def get_prodY_SMILES(test_A_smiles,\
     question = "Answer 5 candidates of 'y1 to y5' in \
                 {answer_format}"
     condition_1 = "Don't use '\n' in your ansewer" #これは微妙
-    condition_2 = "Exclude unclosed ring structures from y1-y5 \
-                    (example:'C1=CC=C(CNC2=NC=C(C=C2)C(=O)N)C(F)(F)F')." #これはなし
+    #condition_2 = "Exclude unclosed ring structures from y1-y5 \
+                    #(example:'C1=CC=C(CNC2=NC=C(C=C2)C(=O)N)C(F)(F)F')." #これはなし
     condition_3 = f"If {test_A_smiles} and {test_B_smiles} are in {training_dataset}, \
-                    the corresponding 'Y' should be included in y1-y5." #これは効果あった
+                    the corresponding 'Y' should be included in y1-y5." #これは効果あった?
+    condition_4 = f"Count the number of atoms of the compounds A, B, and Y \
+                    in the {training_dataset} set and learn the changes before and after the reaction \
+                    example: \
+                    A: c1ccc(N)cc1 (number of atoms is 14) \
+                    B: c1ccc(Br)cc1 (number of atoms is 12) \
+                    Y: c1ccc(NC2C=CC=CC=2)cc1 (number of atoms is 24)."
 
     # エラーになった例を貯めていって学習させるっていうのはあり?
 
@@ -30,8 +36,9 @@ def get_prodY_SMILES(test_A_smiles,\
         {"role": "assistant", "content": f"{training_dataset}+{test}"},
         {"role": "user", "content": f"{question}"},
         {"role": "assistant", "content": f"{condition_1}"},
-        {"role": "assistant", "content": f"{condition_2}"},
-        {"role": "assistant", "content": f"{condition_3}"}
+        #{"role": "assistant", "content": f"{condition_2}"},
+        {"role": "assistant", "content": f"{condition_3}"},
+        {"role": "assistant", "content": f"{condition_4}"}
         ],
         max_tokens=300,
         temperature=0,
@@ -67,9 +74,8 @@ def get_prodY_SMILES(test_A_smiles,\
         )
     
     #計算したタニモト係数を降順に並べる
-    df_product_Y_candidates.sort_values("Y_candidates_tnmt", ascending=False)
+    df_Y = df_product_Y_candidates.sort_values("Y_candidates_tnmt", ascending=False)
 
-
-    df_Y = df_product_Y_candidates.iloc[:, 0].reset_index()
+    #df_product_Y_candidates.iloc[:, 0].reset_index()
 
     return df_Y
