@@ -24,6 +24,7 @@ def enter_reactants():
         entered_A = st.text_input("Enter reactant A 'SMILES'", DEFAULT_A)
         reactant_A_smiles = st_ketcher(entered_A)
         reactant_A_mol = Chem.MolFromSmiles(reactant_A_smiles)
+        st.write("Entered reactant A 'SMILES' is" , reactant_A_smiles)
 
     with col_B:
         entered_B = st.text_input("Enter reactant B 'SMILES'", DEFAULT_B)
@@ -85,7 +86,8 @@ training_dataset\
                                 df_maccs_fps_ABY,\
                                 reactant_A_maccs_fps,\
                                 reactant_B_maccs_fps,\
-                                35)
+                                40
+                                )
 
 # 化合物ABを反応させる (Yを予測させる)
 if api_key:
@@ -96,10 +98,13 @@ if api_key:
                             reactant_B_smiles, \
                             training_dataset)
     
-    best_Y = df_Y.iloc[0, 1]
+    best_Y = df_Y.iloc[3,0]
 
     with col_A:
-        st.dataframe(df_Y)
+        Images = Draw.MolsToGridImage(df_Y.iloc[1:, 1], \
+                                      molsPerRow=2, \
+                                      subImgSize=(400,400))
+        st.image(Images)
 
     with col_B:
         show_rxn_formula(reactant_A_smiles, \
