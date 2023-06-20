@@ -74,7 +74,8 @@ def extract_training_data(df_smiles_maccs_fps,\
                             reactant_B_maccs_fps,\
                             number):
     
-    # df_maccs_fps の各要素に対してタニモト係数を生成
+    # データセットの各AおよびBの化合物に対して,それぞれのテスト化合物に対する\
+    # タニモト係数を生成する
     df_smiles_maccs_fps["tnmt_A"] = \
     df_maccs_fps_ABY["maccs_fps_A"].apply(lambda maccs_fps: \
     DataStructs.TanimotoSimilarity(reactant_A_maccs_fps, maccs_fps))
@@ -83,17 +84,26 @@ def extract_training_data(df_smiles_maccs_fps,\
     df_maccs_fps_ABY["maccs_fps_B"].apply(lambda maccs_fps: \
     DataStructs.TanimotoSimilarity(reactant_B_maccs_fps, maccs_fps))
 
-    # 化合物Aのタニモト係数でソートする
+    # データフレームを化合物Aのタニモト係数の降順で並び変える
     df_smiles_maccs_fps_tnmt = df_smiles_maccs_fps\
-                                .sort_values("tnmt_B", ascending=False)\
                                 .sort_values("tnmt_A", ascending=False)
-    # ソートしたdfから化合物Aに対するタニモト係数上位35個を抜き取る
-    df_rank_tnmt_A_35 = df_smiles_maccs_fps_tnmt.iloc[:number, 0:3]
+    # ソートしたdfから化合物Aに対するタニモト係数上位トレーニングデータ数の半数を抜き取る
+    df_training_data_A = df_smiles_maccs_fps_tnmt.iloc[:(number/2), 0:3]
     # 抜き取ったdfからstr型のトレーニングデータを作る
     training_dataset= \
     "This is training dataset (A + B → Y):\n\
     "
-    for _, row in df_rank_tnmt_A_35.iterrows():
+    for _, row in df_training_data_A.iterrows():
+        template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
+        training_dataset += template
+    
+    # データフレームを化合物Bのタニモト係数の降順で並び変える
+    df_smiles_maccs_fps_tnmt = df_smiles_maccs_fps\
+                                .sort_values("tnmt_B", ascending=False)
+    # ソートしたdfから化合物Aに対するタニモト係数上位トレーニングデータ数の半数を抜き取る
+    df_training_data_B = df_smiles_maccs_fps_tnmt.iloc[:(number/2), 0:3]
+    # 抜き取ったdfからstr型のトレーニングデータを作る
+    for _, row in df_training_data_B.iterrows():
         template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
         training_dataset += template
     
