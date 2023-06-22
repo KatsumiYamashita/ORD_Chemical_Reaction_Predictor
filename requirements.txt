@@ -53,7 +53,7 @@ nest-asyncio==1.5.6
 numpy==1.24.3
 openai==0.27.7
 openpyxl==3.1.2
-ord-schema==0.3.37
+ord-schema==0.3.54
 packaging==23.1
 pandas==2.0.2
 parso==0.8.3
@@ -66,6 +66,7 @@ prompt-toolkit==3.0.38
 protobuf==4.23.3
 psutil==5.9.0
 psycopg2==2.9.6
+psycopg2-binary==2.9.6
 ptyprocess==0.7.0
 PubChemPy==1.0.4
 pure-eval==0.2.2
