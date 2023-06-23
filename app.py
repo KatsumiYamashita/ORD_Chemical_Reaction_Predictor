@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from streamlit_ketcher import st_ketcher
+from st_aggrid import AgGrid
 from rdkit import rdBase, Chem, DataStructs
 from rdkit.Avalon import pyAvalonTools
 from rdkit.Chem import AllChem, Draw, rdMHFPFingerprint
@@ -81,13 +82,19 @@ reactant_B_count_one \
 = extract.generate_maccs_fps(reactant_B_mol)
 
 # トレーニングデータの取得
-training_dataset\
-= extract.extract_training_data(df_smiles_maccs_fps,\
-                                df_maccs_fps_ABY,\
-                                reactant_A_maccs_fps,\
-                                reactant_B_maccs_fps,\
-                                40
+str_training_dataset,\
+df_training_dataset,\
+= extract.extract_training_data(df_smiles_maccs_fps,
+                                df_maccs_fps_ABY,
+                                reactant_A_maccs_fps,
+                                reactant_B_maccs_fps,
+                                70
                                 )
+
+
+AgGrid(df_training_dataset,
+       fit_columns_on_grid_load=True,
+       height=400)
 
 # 化合物ABを反応させる (Yを予測させる)
 if api_key:
@@ -96,9 +103,9 @@ if api_key:
     df_Y =\
     main.get_prodY_SMILES(reactant_A_smiles, \
                             reactant_B_smiles, \
-                            training_dataset)
+                            str_training_dataset)
     
-    best_Y = df_Y.iloc[3,0]
+    best_Y = df_Y.iloc[0,0]
 
     with col_A:
         Images = Draw.MolsToGridImage(df_Y.iloc[1:, 1], \
@@ -113,4 +120,7 @@ if api_key:
 
 else:
     pass
+
+
+
 
