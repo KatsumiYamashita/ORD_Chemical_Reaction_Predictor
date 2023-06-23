@@ -72,7 +72,8 @@ def extract_training_data(df_smiles_maccs_fps,\
                             df_maccs_fps_ABY,\
                             reactant_A_maccs_fps,\
                             reactant_B_maccs_fps,\
-                            number):
+                            number
+                            ):
     
     # データセットの各AおよびBの化合物に対して,それぞれのテスト化合物に対する\
     # タニモト係数を生成する
@@ -84,30 +85,37 @@ def extract_training_data(df_smiles_maccs_fps,\
     df_maccs_fps_ABY["maccs_fps_B"].apply(lambda maccs_fps: \
     DataStructs.TanimotoSimilarity(reactant_B_maccs_fps, maccs_fps))
 
+    half_number = int(number/2)
+
     # データフレームを化合物Aのタニモト係数の降順で並び変える
     df_smiles_maccs_fps_tnmt = df_smiles_maccs_fps\
                                 .sort_values("tnmt_A", ascending=False)
     # ソートしたdfから化合物Aに対するタニモト係数上位トレーニングデータ数の半数を抜き取る
-    df_training_data_A = df_smiles_maccs_fps_tnmt.iloc[:(number/2), 0:3]
+    df_training_data_A = df_smiles_maccs_fps_tnmt.iloc[:half_number, 0:3]
     # 抜き取ったdfからstr型のトレーニングデータを作る
-    training_dataset= \
-    "This is training dataset (A + B → Y):\n\
+    str_training_dataset= \
+    "This is the reaction (A + B → Y) training dataset :\n\
     "
     for _, row in df_training_data_A.iterrows():
         template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
-        training_dataset += template
+        str_training_dataset += template
     
     # データフレームを化合物Bのタニモト係数の降順で並び変える
     df_smiles_maccs_fps_tnmt = df_smiles_maccs_fps\
                                 .sort_values("tnmt_B", ascending=False)
     # ソートしたdfから化合物Aに対するタニモト係数上位トレーニングデータ数の半数を抜き取る
-    df_training_data_B = df_smiles_maccs_fps_tnmt.iloc[:(number/2), 0:3]
+    df_training_data_B = df_smiles_maccs_fps_tnmt.iloc[:half_number, 0:3]
     # 抜き取ったdfからstr型のトレーニングデータを作る
     for _, row in df_training_data_B.iterrows():
         template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
-        training_dataset += template
+        str_training_dataset += template
     
-    return training_dataset
+    df_training_dataset = result = pd.concat([df_training_data_A,\
+                                                df_training_data_B],\
+                                                ignore_index=True
+                                            )
+
+    return str_training_dataset, df_training_dataset
 
 
 
