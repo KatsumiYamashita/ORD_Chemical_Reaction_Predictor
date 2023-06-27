@@ -4,6 +4,7 @@ import main
 import openai
 import pubchempy as pcp
 import pandas as pd
+import pickle
 import streamlit as st
 
 from streamlit_ketcher import st_ketcher
@@ -13,54 +14,107 @@ from rdkit.Avalon import pyAvalonTools
 from rdkit.Chem import AllChem, Draw, rdMHFPFingerprint
 from rdkit.Chem.Fingerprints import FingerprintMols
 
-# 化合物A,Bを入力する関数の定義
+# 化合物A,Bを入力する関数を定義する
 def enter_reactants():
 
+    # デフォルトで表示させておく化合物定数(SMILES)を定義する
     DEFAULT_A = r"CC1=NN(C=C1NC2=NC=C(C(=C2)I)C(F)(F)F)C"
     DEFAULT_B = r"CONC(=O)C1=CC=CC=C1N"
 
+    # pcpで取得する情報リストを定義する
+    properties = ['IUPACName',  
+                  'MolecularFormula',
+                  'MolecularWeight',
+                  'XLogP',
+                  'TPSA',
+                  'CanonicalSMILES']
+
+    # streamlit appの表示を２分割するためのカラムを定義する
     col_A, col_B = st.columns(2, gap="large")
 
+    # 各カラムに入力画面を表示させる
     with col_A:
-        entered_A = st.text_input("Enter reactant A 'SMILES'", DEFAULT_A)
+        # 入力部分を作成する
+        entered_A = st.text_input("Enter reactant A 'SMILES'",
+                                   DEFAULT_A)
         reactant_A_smiles = st_ketcher(entered_A)
-        reactant_A_mol = Chem.MolFromSmiles(reactant_A_smiles)
-        st.write("Entered reactant A 'SMILES' is" , reactant_A_smiles)
+
+        # 入力された化合物情報をpubchemから入手する
+        # データベースに情報がない化合物の場合の処理を後で考えておく
+        df_reactant_A_pcp = pcp.get_properties(properties,
+                                               reactant_A_smiles,
+                                               'smiles',
+                                               as_dataframe=True)
+        df_reactant_A_pcp_transposed =\
+              df_reactant_A_pcp.transpose().reset_index()
+        # 情報データフレームを表示させる
+        st.dataframe(df_reactant_A_pcp_transposed)
 
     with col_B:
-        entered_B = st.text_input("Enter reactant B 'SMILES'", DEFAULT_B)
+        # 入力部分を作成する
+        entered_B = st.text_input("Enter reactant B 'SMILES'",
+                                   DEFAULT_B)
         reactant_B_smiles = st_ketcher(entered_B)
-        reactant_B_mol = Chem.MolFromSmiles(reactant_B_smiles)
 
-    return reactant_A_smiles, reactant_B_smiles, reactant_A_mol, reactant_B_mol
+        # 入力された化合物情報をpubchemから入手する
+        # データベースに情報がない化合物の場合の処理を後で考えておく
+        df_reactant_B_pcp = pcp.get_properties(properties,
+                                               reactant_B_smiles,
+                                               'smiles',
+                                               as_dataframe=True)
+        df_reactant_B_pcp_transposed =\
+              df_reactant_B_pcp.transpose().reset_index()
+        # 情報データフレームを表示させる
+        st.dataframe(df_reactant_B_pcp_transposed)
 
-# 反応式を表示させる関数を定義
-def show_rxn_formula(A, B, Y):
 
-    rxn = f"{A}.{B}>>{Y}"
-    st_ketcher(rxn)
+    return reactant_A_smiles,\
+            reactant_B_smiles,\
+
+# 反応式を表示させる関数を定義する
+def show_rxn_formula(smiles_A,
+                     smiles_B,
+                     smiles_Y):
+
+    rxn_smiles = f"{smiles_A}.{smiles_B}>>{smiles_Y}"
+    st_ketcher(rxn_smiles)
 
     return show_rxn_formula
 
-# アプリケーションタイトル
-st.set_page_config(layout="wide")
-st.title("React: A + B → Y")
+# データセットを読み込む関数を定義する
+@st.cache #　２回目以降キャッシュから取り出す
+def load_data(path):
+    with open(path,'rb') as file:
+        df_smiles_mol_maccsfps = pickle.load(file)
+    nd_Amaccs = df_smiles_mol_maccsfps.iloc[:, 7].values
+    nd_Bmaccs = df_smiles_mol_maccsfps.iloc[:, 8].values
 
-# データセットのインポート
-ord_dataset_id = \
-    "ord_dataset-00005539a1e04c809a9a78647bea649c"
+    return df_smiles_mol_maccsfps,\
+            nd_Amaccs,\
+            nd_Bmaccs
 
-df_smiles_ABY,\
-df_mol_ABY,\
-df_smiles_mol\
-= extract.import_dataset(ord_dataset_id)
+# アプリケーションタイトルを作成する
+st.set_page_config(page_title="React",
+                   page_icon="⚗️",
+                   layout="wide")
+# タイトルの下にアプリ説明があっていいのでは
+st.markdown("# React: A + B → Y")
+st.sidebar.header("Report")
+# 再度バーに各種パラメータを表示させたい
+st.write(
+    """report"""
+)
 
-# df_molの各要素に対して maccs_fps を生成
-df_maccs_fps_ABY,\
-df_smiles_maccs_fps\
-= extract.generate_maccs_fps_df(df_mol_ABY, df_smiles_ABY)
+# データセットパスを定義する
+path = './ord_datasets/ord_datasets_csv/df_SmilesMACCSFps.pickle'
+# データセットをロードする
+df_smiles_mol_maccsfps,\
+nd_Amaccs,\
+nd_Bmaccs\
+= load_data(path)
 
 # api_keyの入力
+# 無くす予定
 api_key = st.text_input("API keyを入力してください", \
                         type='password')
 openai.api_key = api_key
@@ -68,33 +122,25 @@ openai.api_key = api_key
 # テスト化合物ABを変数に格納(関数の呼び出し)
 reactant_A_smiles,\
 reactant_B_smiles,\
-reactant_A_mol, \
-reactant_B_mol \
 = enter_reactants()
 
 # テスト化合物ABのmaccs fpsを生成
-reactant_A_maccs_fps,\
-reactant_A_count_one \
-= extract.generate_maccs_fps(reactant_A_mol)
+reactant_A_mol = Chem.MolFromSmiles(reactant_A_smiles)
+reactant_A_maccsfps = AllChem.GetMACCSKeysFingerprint(reactant_A_mol)
 
-reactant_B_maccs_fps,\
-reactant_B_count_one \
-= extract.generate_maccs_fps(reactant_B_mol)
+reactant_B_mol = Chem.MolFromSmiles(reactant_B_smiles)
+reactant_B_maccsfps = AllChem.GetMACCSKeysFingerprint(reactant_B_mol)
 
 # トレーニングデータの取得
+# トレーニングデータ数は選択できるようにしたい
 str_training_dataset,\
 df_training_dataset,\
-= extract.extract_training_data(df_smiles_maccs_fps,
-                                df_maccs_fps_ABY,
-                                reactant_A_maccs_fps,
-                                reactant_B_maccs_fps,
-                                70
-                                )
-
-
-AgGrid(df_training_dataset,
-       fit_columns_on_grid_load=True,
-       height=400)
+= main.extract_training_data(nd_Amaccs,
+                             nd_Bmaccs,
+                             reactant_A_maccsfps,
+                             reactant_B_maccsfps,
+                             df_smiles_mol_maccsfps,
+                             50)
 
 # 化合物ABを反応させる (Yを予測させる)
 if api_key:
