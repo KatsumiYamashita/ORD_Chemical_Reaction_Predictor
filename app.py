@@ -1,5 +1,4 @@
 # モジュールのインポート
-import extract
 import main
 import openai
 import pubchempy as pcp
