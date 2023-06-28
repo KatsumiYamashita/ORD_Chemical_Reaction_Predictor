@@ -2,32 +2,24 @@ import numpy as np
 import openai
 import pandas as pd
 import re
+import warnings
 
 from rdkit import rdBase, Chem, DataStructs
 from rdkit.Chem import AllChem
 from rdkit.Chem.Fingerprints import FingerprintMols
 
 # トレーニングデータを抽出する関数を定義する
-def extract_training_data(nd_Amaccs,
-                          nd_Bmaccs,
-                          reactant_A_maccsfps,
-                          reactant_B_maccsfps,
+def extract_training_data(nd_tnmt_A,
+                          nd_tnmt_B,
                           df_smiles_mol_maccsfps,
                           td_number
                          ):
-    
-    # DataStructs.TanimotoSimilarityをベクトル化する
-    uf_TNMTSimilarity = np.frompyfunc(DataStructs.TanimotoSimilarity, 1, 1)
-
-    # テスト分子に対するトレーニングセットのタニモト係数を計算する
-    nd_TNMT_A = uf_TNMTSimilarity(nd_Amaccs, reactant_A_maccsfps)
-    nd_TNMT_B = uf_TNMTSimilarity(nd_Bmaccs, reactant_B_maccsfps)
 
     # データセットからsmiles部分だけ取り出す
     df_smiles = df_smiles_mol_maccsfps.iloc[:, 0:3]
     # 計算したタニモト係数をdf_smilesに合わせる
-    sr_tnmtA = pd.Series(nd_TNMT_A, name="tnmt_A")
-    sr_tnmtB = pd.Series(nd_TNMT_B, name="tnmt_B")
+    sr_tnmtA = pd.Series(nd_tnmt_A, name="tnmt_A")
+    sr_tnmtB = pd.Series(nd_tnmt_B, name="tnmt_B")
     df_smiles_tnmt = pd.concat([df_smiles, sr_tnmtA, sr_tnmtB], axis=1)
 
     str_training_dataset= \
@@ -40,7 +32,7 @@ def extract_training_data(nd_Amaccs,
     # ソートしたdfから化合物Aに対するタニモト係数上位トレーニングデータ数の半数を抜き取る
     df_training_data_A = df_smiles_tnmt_A.iloc[:half_number, 0:3]
     # 抜き取ったdfからstr型のトレーニングデータを作る
-    for row in df_training_data_A.iterrows():
+    for _, row in df_training_data_A.iterrows():
         template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
         str_training_dataset += template
     
@@ -49,7 +41,7 @@ def extract_training_data(nd_Amaccs,
     # ソートしたdfから化合物Aに対するタニモト係数上位トレーニングデータ数の半数を抜き取る
     df_training_data_B = df_smiles_tnmt_B.iloc[:half_number, 0:3]
     # 抜き取ったdfからstr型のトレーニングデータを作る
-    for row in df_training_data_B.iterrows():
+    for _, row in df_training_data_B.iterrows():
         template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
         str_training_dataset += template
     
@@ -83,8 +75,6 @@ def get_prodY_SMILES(test_A_smiles,\
     condition_5 = f"Atoms and functional groups of Y that not involved \
                     in the reaction remain unchanged from {test_A_smiles} and {test_B_smiles}."
 
-    # エラーになった例を貯めていって学習させるっていうのはあり?
-
     response = openai.ChatCompletion.create(
     model="gpt-3.5-turbo-16k",
     messages=[
@@ -98,7 +88,7 @@ def get_prodY_SMILES(test_A_smiles,\
         #{"role": "assistant", "content": f"{condition_5}"}
         ],
         max_tokens=300,
-        temperature=1,
+        temperature=0.5,
         )
     
     # gptのresponseからYの候補が含まれている部分を抜き出す
