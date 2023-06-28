@@ -1,10 +1,12 @@
 # モジュールのインポート
 import main
+import numpy as np
 import openai
 import pubchempy as pcp
 import pandas as pd
 import pickle
 import streamlit as st
+import warnings
 
 from streamlit_ketcher import st_ketcher
 from st_aggrid import AgGrid
@@ -45,9 +47,10 @@ def enter_reactants():
                                                'smiles',
                                                as_dataframe=True)
         df_reactant_A_pcp_transposed =\
-              df_reactant_A_pcp.transpose().reset_index()
+              df_reactant_A_pcp.transpose() #.reset_index()
         # 情報データフレームを表示させる
-        st.dataframe(df_reactant_A_pcp_transposed)
+        st.write("'Reactant A' Info from PubChem:")
+        st.table(df_reactant_A_pcp_transposed) #dfを表示させる方法はいくつかあるみたい
 
     with col_B:
         # 入力部分を作成する
@@ -62,9 +65,10 @@ def enter_reactants():
                                                'smiles',
                                                as_dataframe=True)
         df_reactant_B_pcp_transposed =\
-              df_reactant_B_pcp.transpose().reset_index()
+              df_reactant_B_pcp.transpose() #.reset_index()
         # 情報データフレームを表示させる
-        st.dataframe(df_reactant_B_pcp_transposed)
+        st.write("'Reactant B' Info from PubChem:")
+        st.table(df_reactant_B_pcp_transposed)
 
 
     return reactant_A_smiles,\
@@ -81,12 +85,12 @@ def show_rxn_formula(smiles_A,
     return show_rxn_formula
 
 # データセットを読み込む関数を定義する
-@st.cache #　２回目以降キャッシュから取り出す
+@st.cache_data    #(hash_funcs={pandas.core.frame.DataFrame: my_hash_func}) #　２回目以降キャッシュから取り出す
 def load_data(path):
     with open(path,'rb') as file:
         df_smiles_mol_maccsfps = pickle.load(file)
-    nd_Amaccs = df_smiles_mol_maccsfps.iloc[:, 7].values
-    nd_Bmaccs = df_smiles_mol_maccsfps.iloc[:, 8].values
+    nd_Amaccs = df_smiles_mol_maccsfps.iloc[:, 4].values
+    nd_Bmaccs = df_smiles_mol_maccsfps.iloc[:, 5].values
 
     return df_smiles_mol_maccsfps,\
             nd_Amaccs,\
@@ -130,39 +134,54 @@ reactant_A_maccsfps = AllChem.GetMACCSKeysFingerprint(reactant_A_mol)
 reactant_B_mol = Chem.MolFromSmiles(reactant_B_smiles)
 reactant_B_maccsfps = AllChem.GetMACCSKeysFingerprint(reactant_B_mol)
 
+# テスト分子とのTANIMOTO係数を計算する関数を定義する
+def tnmt_similarity(nd_Amaccs,
+                    nd_Bmaccs):
+
+    nd_TNMT_A = DataStructs.TanimotoSimilarity(nd_Amaccs, 
+                                               reactant_A_maccsfps)
+    nd_TNMT_B = DataStructs.TanimotoSimilarity(nd_Bmaccs, 
+                                               reactant_B_maccsfps)
+
+    return nd_TNMT_A, nd_TNMT_B
+
+# テスト分子とのTANIMOTO係数を計算する
+uf_TNMTSimilarity = np.frompyfunc(tnmt_similarity, 2, 2)
+nd_tnmt_A, nd_tnmt_B = uf_TNMTSimilarity(nd_Amaccs, nd_Bmaccs)
+
 # トレーニングデータの取得
 # トレーニングデータ数は選択できるようにしたい
 str_training_dataset,\
 df_training_dataset,\
-= main.extract_training_data(nd_Amaccs,
-                             nd_Bmaccs,
-                             reactant_A_maccsfps,
-                             reactant_B_maccsfps,
+= main.extract_training_data(nd_tnmt_A,
+                             nd_tnmt_B,
                              df_smiles_mol_maccsfps,
-                             50)
+                             50,
+                             )
 
 # 化合物ABを反応させる (Yを予測させる)
 if api_key:
 
-    col_A, col_B = st.columns(2, gap="large")
     df_Y =\
-    main.get_prodY_SMILES(reactant_A_smiles, \
-                            reactant_B_smiles, \
-                            str_training_dataset)
+    main.get_prodY_SMILES(reactant_A_smiles,
+                          reactant_B_smiles,
+                          str_training_dataset)
     
     best_Y = df_Y.iloc[0,0]
 
-    with col_A:
-        Images = Draw.MolsToGridImage(df_Y.iloc[1:, 1], \
+
+    show_rxn_formula(reactant_A_smiles,
+                     reactant_B_smiles,
+                     best_Y) 
+    """
+    Images = Draw.MolsToGridImage(df_Y.iloc[1:, 1], \
                                       molsPerRow=2, \
                                       subImgSize=(400,400))
-        st.image(Images)
+    
+    st.image(Images)
 
-    with col_B:
-        show_rxn_formula(reactant_A_smiles, \
-                        reactant_B_smiles, \
-                        best_Y) 
-
+    """
+    
 else:
     pass
 
