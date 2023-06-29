@@ -75,8 +75,8 @@ plotly-express==0.4.1
 prompt-toolkit==3.0.38
 protobuf==4.23.3
 psutil==5.9.0
-psycopg2==2.9.6
 psycopg2-binary==2.9.6
+psycopg2==2.9.6
 ptyprocess==0.7.0
 PubChemPy==1.0.4
 pure-eval==0.2.2
