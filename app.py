@@ -153,38 +153,50 @@ nd_tnmt_A, nd_tnmt_B = uf_TNMTSimilarity(nd_Amaccs, nd_Bmaccs)
 # トレーニングデータ数は選択できるようにしたい
 str_training_dataset,\
 df_training_dataset,\
+kobukuro\
 = main.extract_training_data(nd_tnmt_A,
                              nd_tnmt_B,
                              df_smiles_mol_maccsfps,
-                             50,
+                             10,
                              )
+st.write(kobukuro)
 
-# 化合物ABを反応させる (Yを予測させる)
-if api_key:
-
-    df_Y =\
+kobukuro =\
     main.get_prodY_SMILES(reactant_A_smiles,
                           reactant_B_smiles,
                           str_training_dataset)
     
-    best_Y = df_Y.iloc[0,0]
 
 
+# 化合物ABを反応させる (Yを予測させる)
+"""
+if api_key:
+
+    response_text =\
+    main.get_prodY_SMILES(reactant_A_smiles,
+                          reactant_B_smiles,
+                          str_training_dataset)
+    
+    st.write(response_text)
+    
+    #best_Y = df_Y.iloc[0,0]
+
+  
     show_rxn_formula(reactant_A_smiles,
                      reactant_B_smiles,
                      best_Y) 
-    """
+    
     Images = Draw.MolsToGridImage(df_Y.iloc[1:, 1], \
                                       molsPerRow=2, \
                                       subImgSize=(400,400))
     
     st.image(Images)
 
-    """
+   
     
 else:
     pass
-
+ """
 
 
 
