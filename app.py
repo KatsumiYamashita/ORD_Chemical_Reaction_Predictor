@@ -85,7 +85,7 @@ def show_rxn_formula(smiles_A,
     return show_rxn_formula
 
 # データセットを読み込む関数を定義する
-@st.cache_data    #(hash_funcs={pandas.core.frame.DataFrame: my_hash_func}) #　２回目以降キャッシュから取り出す
+#@st.cache_data    #(hash_funcs={pandas.core.frame.DataFrame: my_hash_func}) #　２回目以降キャッシュから取り出す
 def load_data(path):
     with open(path,'rb') as file:
         df_smiles_mol_maccsfps = pickle.load(file)
