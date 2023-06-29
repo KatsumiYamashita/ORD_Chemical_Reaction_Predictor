@@ -59,7 +59,6 @@ numexpr==2.8.4
 numpy==1.24.3
 openai==0.27.7
 openpyxl==3.1.2
-ord-schema==0.3.54
 packaging==23.1
 pandas==1.5.3
 parso==0.8.3
