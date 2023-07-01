@@ -9,11 +9,8 @@ import streamlit as st
 import warnings
 
 from streamlit_ketcher import st_ketcher
-from st_aggrid import AgGrid
-from rdkit import rdBase, Chem, DataStructs
-from rdkit.Avalon import pyAvalonTools
-from rdkit.Chem import AllChem, Draw, rdMHFPFingerprint
-from rdkit.Chem.Fingerprints import FingerprintMols
+from rdkit import Chem, DataStructs
+from rdkit.Chem import AllChem
 
 # 化合物A,Bを入力する関数を定義する
 def enter_reactants():
@@ -31,14 +28,15 @@ def enter_reactants():
                   'CanonicalSMILES']
 
     # streamlit appの表示を２分割するためのカラムを定義する
-    col_A, col_B = st.columns(2, gap="large")
+    col_A, col_B = st.columns(2, gap="medium")
 
     # 各カラムに入力画面を表示させる
     with col_A:
         # 入力部分を作成する
         entered_A = st.text_input("Enter reactant A 'SMILES'",
                                    DEFAULT_A)
-        reactant_A_smiles = st_ketcher(entered_A)
+        reactant_A_smiles = st_ketcher(entered_A,
+                                       height = 400)
 
         # 入力された化合物情報をpubchemから入手する
         # データベースに情報がない化合物の場合の処理を後で考えておく
@@ -56,7 +54,8 @@ def enter_reactants():
         # 入力部分を作成する
         entered_B = st.text_input("Enter reactant B 'SMILES'",
                                    DEFAULT_B)
-        reactant_B_smiles = st_ketcher(entered_B)
+        reactant_B_smiles = st_ketcher(entered_B,
+                                       height = 400)
 
         # 入力された化合物情報をpubchemから入手する
         # データベースに情報がない化合物の場合の処理を後で考えておく
@@ -85,7 +84,7 @@ def show_rxn_formula(smiles_A,
     return show_rxn_formula
 
 # データセットを読み込む関数を定義する
-#@st.cache_data    #(hash_funcs={pandas.core.frame.DataFrame: my_hash_func}) #　２回目以降キャッシュから取り出す
+@st.cache_data    #(hash_funcs={pandas.core.frame.DataFrame: my_hash_func}) #　２回目以降キャッシュから取り出す
 def load_data(path):
     with open(path,'rb') as file:
         df_smiles_mol_maccsfps = pickle.load(file)
@@ -96,20 +95,39 @@ def load_data(path):
             nd_Amaccs,\
             nd_Bmaccs
 
-# アプリケーションタイトルを作成する
-st.set_page_config(page_title="React",
+def app_info():
+    st.markdown(f"""
+	# React ABY
+	version {__version__}
+
+	Prediction chemical product 'Y' from reactant 'A' and 'B' by GPT-3.5.
+	""")
+
+    st.write("Made by [Katsumi Yamashita](https://katsumiyamashita.github.io/).", unsafe_allow_html=True)
+
+__version__ = "0.0.0"
+app_name = "React_ABY"
+
+# タブに表示させるタイトルを作成する
+st.set_page_config(page_title=f'{app_name} {__version__}',
                    page_icon="⚗️",
+                   initial_sidebar_state = "collapsed",
                    layout="wide")
-# タイトルの下にアプリ説明があっていいのでは
+
+# アプリケーションのセッション状態を保持
+# 途中
+ss = st.session_state
+if 'debug' not in ss: ss['debug'] = {}
+
+# アプリケーションタイトル
 st.markdown("# React: A + B → Y")
 st.sidebar.header("Report")
-# 再度バーに各種パラメータを表示させたい
 st.write(
     """report"""
 )
 
 # データセットパスを定義する
-path = './ord_datasets/ord_datasets_csv/df_SmilesMACCSFps.pickle'
+path = './ord_datasets/ord-data/df_SmilesMACCSFps.pickle'
 # データセットをロードする
 df_smiles_mol_maccsfps,\
 nd_Amaccs,\
@@ -153,50 +171,31 @@ nd_tnmt_A, nd_tnmt_B = uf_TNMTSimilarity(nd_Amaccs, nd_Bmaccs)
 # トレーニングデータ数は選択できるようにしたい
 str_training_dataset,\
 df_training_dataset,\
-kobukuro\
 = main.extract_training_data(nd_tnmt_A,
                              nd_tnmt_B,
                              df_smiles_mol_maccsfps,
                              10,
                              )
-st.write(kobukuro)
-
-kobukuro =\
-    main.get_prodY_SMILES(reactant_A_smiles,
-                          reactant_B_smiles,
-                          str_training_dataset)
-    
-
 
 # 化合物ABを反応させる (Yを予測させる)
-"""
 if api_key:
 
-    response_text =\
+    df_Y =\
     main.get_prodY_SMILES(reactant_A_smiles,
                           reactant_B_smiles,
                           str_training_dataset)
     
-    st.write(response_text)
-    
-    #best_Y = df_Y.iloc[0,0]
-
+    best_Y = df_Y.iloc[0,0]
   
     show_rxn_formula(reactant_A_smiles,
                      reactant_B_smiles,
                      best_Y) 
     
-    Images = Draw.MolsToGridImage(df_Y.iloc[1:, 1], \
-                                      molsPerRow=2, \
-                                      subImgSize=(400,400))
-    
-    st.image(Images)
+    st.dataframe(df_Y)
 
-   
-    
 else:
     pass
- """
+
 
 
 
