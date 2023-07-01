@@ -2,11 +2,9 @@ import numpy as np
 import openai
 import pandas as pd
 import re
-import warnings
 
-from rdkit import rdBase, Chem, DataStructs
+from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
-from rdkit.Chem.Fingerprints import FingerprintMols
 
 # トレーニングデータを抽出する関数を定義する
 def extract_training_data(nd_tnmt_A,
@@ -49,7 +47,7 @@ def extract_training_data(nd_tnmt_A,
                                      df_training_data_B], 
                                      ignore_index=True
                                     )
-
+    
     return str_training_dataset, df_training_dataset
 
 def get_prodY_SMILES(test_A_smiles,\
@@ -58,8 +56,8 @@ def get_prodY_SMILES(test_A_smiles,\
 
     test = f"A: {test_A_smiles}\
              B: {test_B_smiles}"
-    answer_format = "{Y1:y1, Y2:y2, Y3:y3, Y4:y4, Y5:y5}"
-    question = "Answer 5 candidates of 'y1 to y5' in \
+    answer_format = "Y1:y1, Y2:y2, Y3:y3, Y4:y4, Y5:y5"
+    question = f"Answer 5 candidates of 'y1 to y5' in\
                 {answer_format}"
     condition_1 = "Don't use '\n' in your ansewer" #これは微妙
     condition_2 = "Exclude unclosed ring structures from y1-y5 \
@@ -123,6 +121,6 @@ def get_prodY_SMILES(test_A_smiles,\
     #計算したタニモト係数を降順に並べる
     df_Y = df_product_Y_candidates.sort_values("Y_candidates_tnmt", ascending=False)
 
-    #df_product_Y_candidates.iloc[:, 0].reset_index()
+    #df_Y = df_product_Y_candidates.iloc[:, 0].reset_index()
 
     return df_Y
