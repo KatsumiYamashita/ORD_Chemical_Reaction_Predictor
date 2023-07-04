@@ -10,7 +10,8 @@ import warnings
 
 from streamlit_ketcher import st_ketcher
 from rdkit import Chem, DataStructs
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, Draw
+from rdkit.Chem.Draw import rdMolDraw2D
 
 # 化合物A,Bを入力する関数を定義する
 def enter_reactants():
@@ -37,7 +38,6 @@ def enter_reactants():
                                    DEFAULT_A)
         reactant_A_smiles = st_ketcher(entered_A,
                                        height = 400)
-
         # 入力された化合物情報をpubchemから入手する
         # データベースに情報がない化合物の場合の処理を後で考えておく
         df_reactant_A_pcp = pcp.get_properties(properties,
@@ -73,27 +73,55 @@ def enter_reactants():
     return reactant_A_smiles,\
             reactant_B_smiles,\
 
-# 反応式を表示させる関数を定義する
-def show_rxn_formula(smiles_A,
-                     smiles_B,
-                     smiles_Y):
-
-    rxn_smiles = f"{smiles_A}.{smiles_B}>>{smiles_Y}"
-    st_ketcher(rxn_smiles)
-
-    return show_rxn_formula
-
 # データセットを読み込む関数を定義する
 @st.cache_data    #(hash_funcs={pandas.core.frame.DataFrame: my_hash_func}) #　２回目以降キャッシュから取り出す
 def load_data(path):
     with open(path,'rb') as file:
-        df_smiles_mol_maccsfps = pickle.load(file)
-    nd_Amaccs = df_smiles_mol_maccsfps.iloc[:, 4].values
-    nd_Bmaccs = df_smiles_mol_maccsfps.iloc[:, 5].values
+        df_smiles_maccsfps = pickle.load(file)
+    nd_Amaccs = df_smiles_maccsfps.iloc[:, 4].values
+    nd_Bmaccs = df_smiles_maccsfps.iloc[:, 5].values
 
-    return df_smiles_mol_maccsfps,\
+    return df_smiles_maccsfps,\
             nd_Amaccs,\
             nd_Bmaccs
+
+# 結果を表示させる関数を定義する
+def show_report(smiles_A,
+                smiles_B,
+                smiles_Y,
+                df_training_dataset):
+    
+    t1,t2 = st.tabs(['Prediction by GPT-3.5','Training Data from The ORD'])
+
+    with t1:
+        rxn_smiles = f"{smiles_A}.{smiles_B}>>{smiles_Y}"
+        st_ketcher(rxn_smiles)
+
+    with t2:
+        st.write("## Reference reaction from The Open Reaction Databese")
+
+        df = df_training_dataset.copy()
+
+        li_rxn_smiles = [f"{df.loc[i, 'A']}.{df.loc[i, 'B']}>>{df.loc[i, 'Y']}" for i in range(len(df))]
+
+        df["rxn_smiles"] = li_rxn_smiles
+
+        def draw_rxn(rxn_smiles):
+            drawer = rdMolDraw2D.MolDraw2DSVG(660,200)
+            rxn = AllChem.ReactionFromSmarts(rxn_smiles, useSmiles=True)
+            drawer.DrawReaction(rxn)
+            drawer.FinishDrawing()
+            svg_rxn = drawer.GetDrawingText()  
+
+            return svg_rxn
+        
+        li_svg_rxn = [draw_rxn(rxn_smiles) for rxn_smiles in li_rxn_smiles]
+
+        for i in range(len(df)):
+            st.image(li_svg_rxn[i], use_column_width=True)
+
+    return show_report
+
 
 def app_info():
     st.markdown(f"""
@@ -127,7 +155,7 @@ st.write(
 )
 
 # データセットパスを定義する
-path = './ord_datasets/ord-data/df_SmilesMACCSFps.pickle'
+path = './ord_datasets/ord_datasets_csv/df_SmilesMACCSFps.pickle'
 # データセットをロードする
 df_smiles_mol_maccsfps,\
 nd_Amaccs,\
@@ -153,6 +181,7 @@ reactant_B_mol = Chem.MolFromSmiles(reactant_B_smiles)
 reactant_B_maccsfps = AllChem.GetMACCSKeysFingerprint(reactant_B_mol)
 
 # テスト分子とのTANIMOTO係数を計算する関数を定義する
+# 関数を使わないで内包表記でいいんじゃないか
 def tnmt_similarity(nd_Amaccs,
                     nd_Bmaccs):
 
@@ -174,27 +203,52 @@ df_training_dataset,\
 = main.extract_training_data(nd_tnmt_A,
                              nd_tnmt_B,
                              df_smiles_mol_maccsfps,
-                             10,
+                             6,
                              )
 
-# 化合物ABを反応させる (Yを予測させる)
-if api_key:
+predict_button = st.button("Pretict !", key=1)
 
-    df_Y =\
+y =\
     main.get_prodY_SMILES(reactant_A_smiles,
-                          reactant_B_smiles,
-                          str_training_dataset)
-    
-    best_Y = df_Y.iloc[0,0]
-  
-    show_rxn_formula(reactant_A_smiles,
-                     reactant_B_smiles,
-                     best_Y) 
-    
-    st.dataframe(df_Y)
+                                reactant_B_smiles,
+                                str_training_dataset)
+best_Y = y 
+            
+show_report(reactant_A_smiles,
+                        reactant_B_smiles,
+                        best_Y,
+                        df_training_dataset)
 
+# 化合物ABを反応させる (Yを予測させる)
+if predict_button:
+
+    if api_key:
+    
+        try:
+            y =\
+            main.get_prodY_SMILES(reactant_A_smiles,
+                                reactant_B_smiles,
+                                str_training_dataset)
+            best_Y = y 
+            
+            show_report(reactant_A_smiles,
+                        reactant_B_smiles,
+                        best_Y)
+
+        except:
+
+            st.markdown("### Sorry...")
+            st.markdown("### Possible 'Y' could not be predicted.")  
+            st.markdown("### 👈 Adjust the parameters and try again!!")
+
+    else:
+        st.write("Please enter your 'API KEY'")    
+
+    
 else:
     pass
+
+
 
 
 
