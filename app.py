@@ -8,17 +8,59 @@ import pickle
 import streamlit as st
 import warnings
 
+from config import OPENAI_API_KEY
 from streamlit_ketcher import st_ketcher
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem, Draw
 from rdkit.Chem.Draw import rdMolDraw2D
 
+__version__ = "0.0.0"
+app_name = "React_ABY"
+
+# CONSTANTS
+DEFAULT_A = r"CC1=NN(C=C1NC2=NC=C(C(=C2)I)C(F)(F)F)C"
+DEFAULT_B = r"CONC(=O)C1=CC=CC=C1N"
+PATH = './ord_datasets/ord_datasets_csv/df_SmilesMACCSFps.pickle'
+
+# タブに表示させるタイトルを作成する
+st.set_page_config(page_title=f'{app_name} {__version__}',
+                   page_icon="⚗️",
+                   initial_sidebar_state = "collapsed",
+                   layout="wide")
+
+# session state
+ss = st.session_state
+
+ss.openai_api_key = OPENAI_API_KEY
+ss.path = PATH
+
+if "entered_A" not in ss:
+    ss.entered_A = DEFAULT_A
+
+if "entered_B" not in ss:
+    ss.entered_B = DEFAULT_B
+
+# Application title and description
+st.markdown("# React: A + B → Y")
+st.sidebar.header("Report")
+st.write(
+    """report"""
+)
+
+# データセットを読み込む関数を定義する
+@st.cache_data   
+def load_data(path):
+    with open(path,'rb') as file:
+        df_smiles_maccsfps = pickle.load(file)
+    nd_Amaccs = df_smiles_maccsfps.iloc[:, 4].values
+    nd_Bmaccs = df_smiles_maccsfps.iloc[:, 5].values
+
+    return df_smiles_maccsfps,\
+            nd_Amaccs,\
+            nd_Bmaccs
+
 # 化合物A,Bを入力する関数を定義する
 def enter_reactants():
-
-    # デフォルトで表示させておく化合物定数(SMILES)を定義する
-    DEFAULT_A = r"CC1=NN(C=C1NC2=NC=C(C(=C2)I)C(F)(F)F)C"
-    DEFAULT_B = r"CONC(=O)C1=CC=CC=C1N"
 
     # pcpで取得する情報リストを定義する
     properties = ['IUPACName',  
@@ -35,7 +77,7 @@ def enter_reactants():
     with col_A:
         # 入力部分を作成する
         entered_A = st.text_input("Enter reactant A 'SMILES'",
-                                   DEFAULT_A)
+                                   ss.entered_A)
         reactant_A_smiles = st_ketcher(entered_A,
                                        height = 400)
         # 入力された化合物情報をpubchemから入手する
@@ -53,7 +95,7 @@ def enter_reactants():
     with col_B:
         # 入力部分を作成する
         entered_B = st.text_input("Enter reactant B 'SMILES'",
-                                   DEFAULT_B)
+                                   ss.entered_B)
         reactant_B_smiles = st_ketcher(entered_B,
                                        height = 400)
 
@@ -72,18 +114,6 @@ def enter_reactants():
 
     return reactant_A_smiles,\
             reactant_B_smiles,\
-
-# データセットを読み込む関数を定義する
-@st.cache_data    #(hash_funcs={pandas.core.frame.DataFrame: my_hash_func}) #　２回目以降キャッシュから取り出す
-def load_data(path):
-    with open(path,'rb') as file:
-        df_smiles_maccsfps = pickle.load(file)
-    nd_Amaccs = df_smiles_maccsfps.iloc[:, 4].values
-    nd_Bmaccs = df_smiles_maccsfps.iloc[:, 5].values
-
-    return df_smiles_maccsfps,\
-            nd_Amaccs,\
-            nd_Bmaccs
 
 # 結果を表示させる関数を定義する
 def show_report(smiles_A,
@@ -133,40 +163,13 @@ def app_info():
 
     st.write("Made by [Katsumi Yamashita](https://katsumiyamashita.github.io/).", unsafe_allow_html=True)
 
-__version__ = "0.0.0"
-app_name = "React_ABY"
-
-# タブに表示させるタイトルを作成する
-st.set_page_config(page_title=f'{app_name} {__version__}',
-                   page_icon="⚗️",
-                   initial_sidebar_state = "collapsed",
-                   layout="wide")
-
-# アプリケーションのセッション状態を保持
-# 途中
-ss = st.session_state
-if 'debug' not in ss: ss['debug'] = {}
-
-# アプリケーションタイトル
-st.markdown("# React: A + B → Y")
-st.sidebar.header("Report")
-st.write(
-    """report"""
-)
-
-# データセットパスを定義する
-path = './ord_datasets/ord_datasets_csv/df_SmilesMACCSFps.pickle'
 # データセットをロードする
 df_smiles_mol_maccsfps,\
 nd_Amaccs,\
 nd_Bmaccs\
-= load_data(path)
+= load_data(ss.path)
 
-# api_keyの入力
-# 無くす予定
-api_key = st.text_input("API keyを入力してください", \
-                        type='password')
-openai.api_key = api_key
+openai.api_key = ss.openai_api_key
 
 # テスト化合物ABを変数に格納(関数の呼び出し)
 reactant_A_smiles,\
@@ -208,42 +211,27 @@ df_training_dataset,\
 
 predict_button = st.button("Pretict !", key=1)
 
-y =\
-    main.get_prodY_SMILES(reactant_A_smiles,
-                                reactant_B_smiles,
-                                str_training_dataset)
-best_Y = y 
-            
-show_report(reactant_A_smiles,
-                        reactant_B_smiles,
-                        best_Y,
-                        df_training_dataset)
-
 # 化合物ABを反応させる (Yを予測させる)
 if predict_button:
-
-    if api_key:
     
-        try:
-            y =\
-            main.get_prodY_SMILES(reactant_A_smiles,
-                                reactant_B_smiles,
-                                str_training_dataset)
-            best_Y = y 
+    st.write("predict_button pushed")
+    #try:
+    y =\
+    main.get_prodY_SMILES(reactant_A_smiles,
+                         reactant_B_smiles,
+                         str_training_dataset)
+    best_Y = y 
             
-            show_report(reactant_A_smiles,
-                        reactant_B_smiles,
-                        best_Y)
+    show_report(reactant_A_smiles,
+                reactant_B_smiles,
+                best_Y,
+                df_training_dataset)
 
-        except:
+    #except:
 
-            st.markdown("### Sorry...")
-            st.markdown("### Possible 'Y' could not be predicted.")  
-            st.markdown("### 👈 Adjust the parameters and try again!!")
-
-    else:
-        st.write("Please enter your 'API KEY'")    
-
+        #st.markdown("### Sorry...")
+        #st.markdown("### Possible 'Y' could not be predicted.")  
+        #st.markdown("### 👈 Adjust the parameters and try again!!")
     
 else:
     pass
