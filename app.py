@@ -1,4 +1,3 @@
-# モジュールのインポート
 import main
 import numpy as np
 import openai
@@ -19,10 +18,19 @@ app_name = "React_ABY"
 
 # CONSTANTS
 DEFAULT_A = r"CC1=NN(C=C1NC2=NC=C(C(=C2)I)C(F)(F)F)C"
-DEFAULT_B = r"CONC(=O)C1=CC=CC=C1N"
-PATH = './ord_datasets/ord_datasets_csv/df_SmilesMACCSFps.pickle'
 
-# タブに表示させるタイトルを作成する
+DEFAULT_B = r"CONC(=O)C1=CC=CC=C1N"
+
+PATH = './ord_datasets/ord_datasets_csv/df_SmilesMACCSFpsID.pickle'
+
+PROPERTIES = ['IUPACName',
+              'MolecularFormula',
+              'MolecularWeight',
+              'XLogP',
+              'TPSA',
+              'CanonicalSMILES']
+
+# Application tub
 st.set_page_config(page_title=f'{app_name} {__version__}',
                    page_icon="⚗️",
                    initial_sidebar_state = "collapsed",
@@ -32,88 +40,63 @@ st.set_page_config(page_title=f'{app_name} {__version__}',
 ss = st.session_state
 
 ss.openai_api_key = OPENAI_API_KEY
+
 ss.path = PATH
 
-if "entered_A" not in ss:
-    ss.entered_A = DEFAULT_A
+ss.properties = PROPERTIES
 
-if "entered_B" not in ss:
-    ss.entered_B = DEFAULT_B
+if "reactant_A" not in ss:
+    ss.reactant_A = DEFAULT_A
 
-# Application title and description
-st.markdown("# React: A + B → Y")
-st.sidebar.header("Report")
-st.write(
-    """report"""
-)
+if "reactant_B" not in ss:
+    ss.reactant_B = DEFAULT_B
+
 
 # データセットを読み込む関数を定義する
 @st.cache_data   
 def load_data(path):
     with open(path,'rb') as file:
-        df_smiles_maccsfps = pickle.load(file)
-    nd_Amaccs = df_smiles_maccsfps.iloc[:, 4].values
-    nd_Bmaccs = df_smiles_maccsfps.iloc[:, 5].values
+        df_smiles_maccsfps_id = pickle.load(file)
 
-    return df_smiles_maccsfps,\
-            nd_Amaccs,\
-            nd_Bmaccs
+    return df_smiles_maccsfps_id
 
 # 化合物A,Bを入力する関数を定義する
-def enter_reactants():
+def enter_reactant(DEFAULTCOMPOUND):
 
-    # pcpで取得する情報リストを定義する
-    properties = ['IUPACName',  
-                  'MolecularFormula',
-                  'MolecularWeight',
-                  'XLogP',
-                  'TPSA',
-                  'CanonicalSMILES']
-
-    # streamlit appの表示を２分割するためのカラムを定義する
-    col_A, col_B = st.columns(2, gap="medium")
-
-    # 各カラムに入力画面を表示させる
-    with col_A:
-        # 入力部分を作成する
-        entered_A = st.text_input("Enter reactant A 'SMILES'",
-                                   ss.entered_A)
-        reactant_A_smiles = st_ketcher(entered_A,
+    entered_compound = st.text_input("Enter reactant A 'SMILES'",
+                                    DEFAULTCOMPOUND)
+    
+    reactant_smiles = st_ketcher(entered_compound,
                                        height = 400)
-        # 入力された化合物情報をpubchemから入手する
-        # データベースに情報がない化合物の場合の処理を後で考えておく
-        df_reactant_A_pcp = pcp.get_properties(properties,
-                                               reactant_A_smiles,
-                                               'smiles',
-                                               as_dataframe=True)
-        df_reactant_A_pcp_transposed =\
-              df_reactant_A_pcp.transpose() #.reset_index()
-        # 情報データフレームを表示させる
-        st.write("'Reactant A' Info from PubChem:")
-        st.table(df_reactant_A_pcp_transposed) #dfを表示させる方法はいくつかあるみたい
+    
+    return reactant_smiles
 
-    with col_B:
-        # 入力部分を作成する
-        entered_B = st.text_input("Enter reactant B 'SMILES'",
-                                   ss.entered_B)
-        reactant_B_smiles = st_ketcher(entered_B,
-                                       height = 400)
+# pcpで取得する情報リストを検索する関数を定義する
+def get_info_reactants(reactant_smiles):
 
-        # 入力された化合物情報をpubchemから入手する
-        # データベースに情報がない化合物の場合の処理を後で考えておく
-        df_reactant_B_pcp = pcp.get_properties(properties,
-                                               reactant_B_smiles,
-                                               'smiles',
-                                               as_dataframe=True)
-        df_reactant_B_pcp_transposed =\
-              df_reactant_B_pcp.transpose() #.reset_index()
-        # 情報データフレームを表示させる
-        st.write("'Reactant B' Info from PubChem:")
-        st.table(df_reactant_B_pcp_transposed)
+    df_reactant_pcp = pcp.get_properties(ss.properties,
+                                         reactant_smiles,
+                                         'smiles',
+                                         as_dataframe=True)
+    
+    df_reactant_pcp_tr = df_reactant_pcp.transpose() 
 
+    return df_reactant_pcp_tr
 
-    return reactant_A_smiles,\
-            reactant_B_smiles,\
+# トレーニングデータを描画する関数を定義する
+def draw_rxn(rxn_smiles):
+
+    drawer = rdMolDraw2D.MolDraw2DSVG(660,200)
+
+    rxn = AllChem.ReactionFromSmarts(rxn_smiles, useSmiles=True)
+
+    drawer.DrawReaction(rxn)
+
+    drawer.FinishDrawing()
+
+    svg_rxn = drawer.GetDrawingText() 
+
+    return svg_rxn
 
 # 結果を表示させる関数を定義する
 def show_report(smiles_A,
@@ -128,27 +111,27 @@ def show_report(smiles_A,
         st_ketcher(rxn_smiles)
 
     with t2:
-        st.write("## Reference reaction from The Open Reaction Databese")
+    
+        li_rxn_smiles = [f"{df_training_dataset.loc[i, 'A']}.\
+                           {df_training_dataset.loc[i, 'B']}>>\
+                           {df_training_dataset.loc[i, 'Y']}"\
+                            for i in range(len(df_training_dataset))]
 
-        df = df_training_dataset.copy()
-
-        li_rxn_smiles = [f"{df.loc[i, 'A']}.{df.loc[i, 'B']}>>{df.loc[i, 'Y']}" for i in range(len(df))]
-
-        df["rxn_smiles"] = li_rxn_smiles
-
-        def draw_rxn(rxn_smiles):
-            drawer = rdMolDraw2D.MolDraw2DSVG(660,200)
-            rxn = AllChem.ReactionFromSmarts(rxn_smiles, useSmiles=True)
-            drawer.DrawReaction(rxn)
-            drawer.FinishDrawing()
-            svg_rxn = drawer.GetDrawingText()  
-
-            return svg_rxn
-        
         li_svg_rxn = [draw_rxn(rxn_smiles) for rxn_smiles in li_rxn_smiles]
 
-        for i in range(len(df)):
-            st.image(li_svg_rxn[i], use_column_width=True)
+        #li_id = list(df_training_dataset["ID"])
+
+        st.write("## Training Data Reaction from The Open Reaction Databese")
+
+        for i in range(len(li_svg_rxn)):
+
+            li_id = df_training_dataset.loc[i, "ID"].split(', ')
+                         
+            for j in li_id:
+                
+                st.write(f"https://open-reaction-database.org/client/id/{j}")
+
+            st.image(li_svg_rxn[i], use_column_width=False)
 
     return show_report
 
@@ -163,25 +146,56 @@ def app_info():
 
     st.write("Made by [Katsumi Yamashita](https://katsumiyamashita.github.io/).", unsafe_allow_html=True)
 
-# データセットをロードする
-df_smiles_mol_maccsfps,\
-nd_Amaccs,\
-nd_Bmaccs\
-= load_data(ss.path)
+# Application title and description
+st.markdown("# React: A + B → Y")
 
+st.sidebar.header("Report")
+
+st.write(
+    """report"""
+)
+
+# データセットをロードする
+df_smiles_maccsfps_id = load_data(ss.path)
+nd_Amaccs = df_smiles_maccsfps_id.loc[:, "maccs_A"].values
+nd_Bmaccs = df_smiles_maccsfps_id.loc[:, "maccs_B"].values
+
+# OpenAI API Keyの認証を行なう
 openai.api_key = ss.openai_api_key
 
-# テスト化合物ABを変数に格納(関数の呼び出し)
-reactant_A_smiles,\
-reactant_B_smiles,\
-= enter_reactants()
+# streamlit appの表示を２分割するためのカラムを定義する
+col_A, col_B = st.columns(2, gap="medium")
+
+with col_A:
+
+    reactant_A_smiles = enter_reactant(ss.reactant_A)
+    ss.reactant_A = reactant_A_smiles
+        
+    df_reactant_A_pcp_tr = get_info_reactants(reactant_A_smiles)
+    ss.df_A_pcp = df_reactant_A_pcp_tr
+
+    st.write("'Reactant A' Info from PubChem:")
+    st.table(ss.df_A_pcp)
+
+with col_B:
+        
+    reactant_B_smiles = enter_reactant(ss.reactant_B)
+    ss.reactant_B = reactant_B_smiles
+        
+    df_reactant_B_pcp_tr = get_info_reactants(reactant_B_smiles)
+    ss.df_B_pcp = df_reactant_B_pcp_tr
+
+    st.write("'Reactant B' Info from PubChem:")
+    st.table(ss.df_B_pcp)
 
 # テスト化合物ABのmaccs fpsを生成
-reactant_A_mol = Chem.MolFromSmiles(reactant_A_smiles)
+reactant_A_mol = Chem.MolFromSmiles(ss.reactant_A)
 reactant_A_maccsfps = AllChem.GetMACCSKeysFingerprint(reactant_A_mol)
+ss.reactant_A_maccsfps = reactant_A_maccsfps
 
-reactant_B_mol = Chem.MolFromSmiles(reactant_B_smiles)
+reactant_B_mol = Chem.MolFromSmiles(ss.reactant_B)
 reactant_B_maccsfps = AllChem.GetMACCSKeysFingerprint(reactant_B_mol)
+ss.reactant_B_maccsfps = reactant_B_maccsfps
 
 # テスト分子とのTANIMOTO係数を計算する関数を定義する
 # 関数を使わないで内包表記でいいんじゃないか
@@ -189,9 +203,9 @@ def tnmt_similarity(nd_Amaccs,
                     nd_Bmaccs):
 
     nd_TNMT_A = DataStructs.TanimotoSimilarity(nd_Amaccs, 
-                                               reactant_A_maccsfps)
+                                               ss.reactant_A_maccsfps)
     nd_TNMT_B = DataStructs.TanimotoSimilarity(nd_Bmaccs, 
-                                               reactant_B_maccsfps)
+                                               ss.reactant_B_maccsfps)
 
     return nd_TNMT_A, nd_TNMT_B
 
@@ -205,7 +219,7 @@ str_training_dataset,\
 df_training_dataset,\
 = main.extract_training_data(nd_tnmt_A,
                              nd_tnmt_B,
-                             df_smiles_mol_maccsfps,
+                             df_smiles_maccsfps_id,
                              6,
                              )
 
@@ -217,14 +231,14 @@ if predict_button:
     st.write("predict_button pushed")
     #try:
     y =\
-    main.get_prodY_SMILES(reactant_A_smiles,
-                         reactant_B_smiles,
-                         str_training_dataset)
-    best_Y = y 
+    main.get_prodY_SMILES(ss.reactant_A,
+                          ss.reactant_B,
+                          str_training_dataset)
+    ss.best_Y = y 
             
-    show_report(reactant_A_smiles,
-                reactant_B_smiles,
-                best_Y,
+    show_report(ss.reactant_A,
+                ss.reactant_B,
+                ss.best_Y,
                 df_training_dataset)
 
     #except:
