@@ -11,33 +11,35 @@ from rdkit.Chem import AllChem
 # トレーニングデータを抽出する関数を定義する
 def extract_training_data(nd_tnmt_A,
                           nd_tnmt_B,
-                          df_smiles_mol_maccsfps,
+                          df_smiles_maccsfps_id,
                           td_number
-                         ):
+                          ):
 
     # データセットからsmiles部分だけ取り出す
-    df_smiles = df_smiles_mol_maccsfps.iloc[:, 0:3]
+    df_smiles_id = df_smiles_maccsfps_id.loc[:, ["A", "B", "Y", "ID"]]
     # 計算したタニモト係数をdf_smilesに合わせる
-    sr_tnmtA = pd.Series(nd_tnmt_A, name="tnmt_A")
-    sr_tnmtB = pd.Series(nd_tnmt_B, name="tnmt_B")
-    df_smiles_tnmt = pd.concat([df_smiles, sr_tnmtA, sr_tnmtB], axis=1)
+    #sr_tnmtA = pd.Series(nd_tnmt_A, name="tnmt_A")
+    #sr_tnmtB = pd.Series(nd_tnmt_B, name="tnmt_B")
+    df_smiles_id["tnmt_A"] = pd.DataFrame(nd_tnmt_A)
+    df_smiles_id["tnmt_B"] = pd.DataFrame(nd_tnmt_B)
+    df_smiles_tnmt_id = df_smiles_id
 
     str_training_dataset= ""
     half_number = int(td_number/2)
 
     # データフレームを化合物Aのタニモト係数の降順で並び変える
-    df_smiles_tnmt_A = df_smiles_tnmt.sort_values("tnmt_A", ascending=False)
+    df_smiles_tnmt_id_A = df_smiles_tnmt_id.sort_values("tnmt_A", ascending=False)
     # ソートしたdfから化合物Aに対するタニモト係数上位トレーニングデータ数の半数を抜き取る
-    df_training_data_A = df_smiles_tnmt_A.iloc[:half_number, 0:3]
+    df_training_data_A = df_smiles_tnmt_id_A.iloc[:half_number, 0:4]
     # 抜き取ったdfからstr型のトレーニングデータを作る
     for _, row in df_training_data_A.iterrows():
         template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
         str_training_dataset += template
     
     # データフレームを化合物Bのタニモト係数の降順で並び変える
-    df_smiles_tnmt_B = df_smiles_tnmt.sort_values("tnmt_B", ascending=False)
+    df_smiles_tnmt_id_B = df_smiles_tnmt_id.sort_values("tnmt_B", ascending=False)
     # ソートしたdfから化合物Aに対するタニモト係数上位トレーニングデータ数の半数を抜き取る
-    df_training_data_B = df_smiles_tnmt_B.iloc[:half_number, 0:3]
+    df_training_data_B = df_smiles_tnmt_id_B.iloc[:half_number, 0:4]
     # 抜き取ったdfからstr型のトレーニングデータを作る
     for _, row in df_training_data_B.iterrows():
         template = "A: " + row['A'] + "\\" + "\n" + "B: " + row['B'] + "\\" + "\n" + "Y: " + row['Y'] + "\\" + "\n" + "\\" + "\n"
