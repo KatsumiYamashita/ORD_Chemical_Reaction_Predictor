@@ -66,8 +66,16 @@ def enter_reactant(DEFAULTCOMPOUND):
     entered_compound = st.text_input("Enter reactant A 'SMILES'",
                                     DEFAULTCOMPOUND)
     
-    reactant_smiles = st_ketcher(entered_compound,
-                                       height = 400)
+    reactant = st_ketcher(entered_compound,
+                            height = 400)
+    
+    reactant_mol = Chem.MolFromSmiles(reactant)
+    reactant_smiles = Chem.MolToSmiles(reactant_mol,
+                                       isomericSmiles=False,
+                                       kekuleSmiles=False,
+                                       allBondsExplicit=False,
+                                       allHsExplicit=False,
+                                       canonical=True)
     
     return reactant_smiles
 
@@ -101,14 +109,19 @@ def draw_rxn(rxn_smiles):
 # 結果を表示させる関数を定義する
 def show_report(smiles_A,
                 smiles_B,
-                smiles_Y,
+                df_Y,
                 df_training_dataset):
     
-    t1,t2 = st.tabs(['Prediction by GPT-3.5','Training Data from The ORD'])
+    t1,t2 = st.tabs(['Prediction by GPT-3.5','Training Data from the ORD'])
 
     with t1:
-        rxn_smiles = f"{smiles_A}.{smiles_B}>>{smiles_Y}"
-        st_ketcher(rxn_smiles)
+        st.dataframe(df_Y)
+        
+        y_candidates = list(df_Y["Y_candidates"])
+        
+        li_rxn_smiles = [f"{smiles_A}.{smiles_B}>>{i}" for i in y_candidates]
+        
+        st_ketcher(li_rxn_smiles[0])
 
     with t2:
     
@@ -121,17 +134,21 @@ def show_report(smiles_A,
 
         #li_id = list(df_training_dataset["ID"])
 
-        st.write("## Training Data Reaction from The Open Reaction Databese")
+        st.write("## Training Data Reaction from the Open Reaction Databese")
 
         for i in range(len(li_svg_rxn)):
-
+    
             li_id = df_training_dataset.loc[i, "ID"].split(', ')
+            
+            st.write("------------------------------------------------------")
                          
             for j in li_id:
                 
                 st.write(f"https://open-reaction-database.org/client/id/{j}")
 
             st.image(li_svg_rxn[i], use_column_width=False)
+            
+            st.write("------------------------------------------------------")
 
     return show_report
 
@@ -220,7 +237,7 @@ df_training_dataset,\
 = main.extract_training_data(nd_tnmt_A,
                              nd_tnmt_B,
                              df_smiles_maccsfps_id,
-                             6,
+                             20,
                              )
 
 predict_button = st.button("Pretict !", key=1)
@@ -228,17 +245,18 @@ predict_button = st.button("Pretict !", key=1)
 # 化合物ABを反応させる (Yを予測させる)
 if predict_button:
     
-    st.write("predict_button pushed")
-    #try:
-    y =\
+    response, df_Y =\
     main.get_prodY_SMILES(ss.reactant_A,
                           ss.reactant_B,
                           str_training_dataset)
-    ss.best_Y = y 
+    
+    #st.dataframe(df_Y)
+    #st.dataframe(response)
+    #ss.best_Y = df_Y 
             
     show_report(ss.reactant_A,
                 ss.reactant_B,
-                ss.best_Y,
+                df_Y,
                 df_training_dataset)
 
     #except:
