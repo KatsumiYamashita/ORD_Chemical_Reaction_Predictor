@@ -1,13 +1,14 @@
 import main
 import numpy as np
 import openai
+import os
 import pubchempy as pcp
 import pandas as pd
 import pickle
 import streamlit as st
 import warnings
 
-from config import OPENAI_API_KEY
+#from config import OPENAI_API_KEY
 from streamlit_ketcher import st_ketcher
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem, Draw
@@ -39,7 +40,7 @@ st.set_page_config(page_title=f'{app_name} {__version__}',
 # session state
 ss = st.session_state
 
-ss.openai_api_key = OPENAI_API_KEY
+ss.openai_api_key = os.getenv('OPENAI_API_KEY')
 
 ss.path = PATH
 
