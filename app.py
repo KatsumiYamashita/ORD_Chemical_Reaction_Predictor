@@ -8,7 +8,6 @@ import pickle
 import streamlit as st
 import warnings
 
-#from config import OPENAI_API_KEY
 from streamlit_ketcher import st_ketcher
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem, Draw
