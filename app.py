@@ -61,9 +61,9 @@ def load_data(path):
     return df_smiles_maccsfps_id
 
 # 化合物A,Bを入力する関数を定義する
-def enter_reactant(DEFAULTCOMPOUND):
+def enter_reactant(X, DEFAULTCOMPOUND):
 
-    entered_compound = st.text_input("Enter reactant A 'SMILES'",
+    entered_compound = st.text_input(f"{X}: ",
                                     DEFAULTCOMPOUND)
     
     reactant = st_ketcher(entered_compound,
@@ -115,6 +115,9 @@ def show_report(smiles_A,
     t1,t2 = st.tabs(['Prediction by GPT-3.5','Training Data from the ORD'])
 
     with t1:
+        
+        st.write("## Prediction chemical product 'Y' from reactant 'A' and 'B' by GPT-3.5")
+        
         st.dataframe(df_Y)
         
         y_candidates = list(df_Y["Y_candidates"])
@@ -134,7 +137,9 @@ def show_report(smiles_A,
 
         #li_id = list(df_training_dataset["ID"])
 
-        st.write("## Training Data Reaction from the Open Reaction Databese")
+        st.write("## Training Data Reaction from 'the Open Reaction Databese'")
+        st.write("Github pages → https://docs.open-reaction-database.org/en/latest/")
+        st.write("ORD → https://open-reaction-database.org/client/browse")
 
         for i in range(len(li_svg_rxn)):
     
@@ -152,24 +157,52 @@ def show_report(smiles_A,
 
     return show_report
 
+def spacer(n=2, line=False, next_n=0):
+	for _ in range(n):
+		st.write('')
+	if line:
+		st.tabs([' '])
+	for _ in range(next_n):
+		st.write('')
 
 def app_info():
     st.markdown(f"""
+                
 	# React ABY
 	version {__version__}
-
-	Prediction chemical product 'Y' from reactant 'A' and 'B' by GPT-3.5.
+ 
 	""")
-
-    st.write("Made by [Katsumi Yamashita](https://katsumiyamashita.github.io/).", unsafe_allow_html=True)
+    spacer(1)
+    st.write("Made by [Katsumi Yamashita](https://katsumiyamashita.github.io/)", unsafe_allow_html=True)
+    spacer(1)
+    st.write("Source code in [Github Repo](https://github.com/KatsumiYamashita/React_ABY)", unsafe_allow_html=True)
+    spacer(1)
+    st.write("-------------------------------")
+    spacer(1)
+    st.markdown("# References")
+    spacer(1)
+    st.write("・[The Open Reaction Database](https://docs.open-reaction-database.org/en/latest/)", unsafe_allow_html=True)
+    st.write("・[streamlit-ketcher](https://github-com.translate.goog/mik-laj/streamlit-ketcher?ref=blog.streamlit.io&_x_tr_sl=en&_x_tr_tl=ja&_x_tr_hl=ja&_x_tr_pto=sc)", unsafe_allow_html=True)
+    st.write("・[PubChem](https://pubchem.ncbi.nlm.nih.gov/)", unsafe_allow_html=True)
+    st.write("・[OpenAI](https://platform.openai.com/overview)", unsafe_allow_html=True)
+    spacer(1)
+    st.write("-------------------------------")
+    spacer(1)
+    st.markdown("# Acknowledgment")
+    spacer(1)
+    st.write("[Suguru Tanaka](https://suguru-tanaka.com/)", unsafe_allow_html=True)
+    st.write("I created my first St. App as part of his coaching program. I am truly grateful for his passionate guidance.")
+    
+    return app_info
 
 # Application title and description
-st.markdown("# React: A + B → Y")
+st.title("React: A + B → Y")
 
-st.sidebar.header("Report")
+with st.sidebar:
+    app_info()
 
 st.write(
-    """report"""
+    """### Enter your compounds that want to react !!"""
 )
 
 # データセットをロードする
@@ -185,24 +218,26 @@ col_A, col_B = st.columns(2, gap="medium")
 
 with col_A:
 
-    reactant_A_smiles = enter_reactant(ss.reactant_A)
+    reactant_A_smiles = enter_reactant("A", ss.reactant_A)
     ss.reactant_A = reactant_A_smiles
         
-    df_reactant_A_pcp_tr = get_info_reactants(reactant_A_smiles)
-    ss.df_A_pcp = df_reactant_A_pcp_tr
-
-    st.write("'Reactant A' Info from PubChem:")
+    ss.df_A_pcp = get_info_reactants(reactant_A_smiles)
+    cid_A = ss.df_A_pcp.columns
+    url_A =f"https://pubchem.ncbi.nlm.nih.gov/compound/{str(cid_A[0])}"
+    
+    st.write(f"'Reactant A' Info from [PubChem]({url_A}):")
     st.table(ss.df_A_pcp)
 
 with col_B:
         
-    reactant_B_smiles = enter_reactant(ss.reactant_B)
+    reactant_B_smiles = enter_reactant("B", ss.reactant_B)
     ss.reactant_B = reactant_B_smiles
         
-    df_reactant_B_pcp_tr = get_info_reactants(reactant_B_smiles)
-    ss.df_B_pcp = df_reactant_B_pcp_tr
-
-    st.write("'Reactant B' Info from PubChem:")
+    ss.df_B_pcp = get_info_reactants(reactant_B_smiles)
+    cid_B = ss.df_B_pcp.columns
+    url_B =f"https://pubchem.ncbi.nlm.nih.gov/compound/{str(cid_B[0])}"
+    
+    st.write(f"'Reactant B' Info from [PubChem]({url_B}):")
     st.table(ss.df_B_pcp)
 
 # テスト化合物ABのmaccs fpsを生成
@@ -244,7 +279,7 @@ predict_button = st.button("Pretict !", key=1)
 
 # 化合物ABを反応させる (Yを予測させる)
 if predict_button:
-    
+    #try
     response, df_Y =\
     main.get_prodY_SMILES(ss.reactant_A,
                           ss.reactant_B,
