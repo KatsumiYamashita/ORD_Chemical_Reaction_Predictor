@@ -30,6 +30,8 @@ PROPERTIES = ['IUPACName',
               'TPSA',
               'CanonicalSMILES']
 
+os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
+
 # Application tub
 st.set_page_config(page_title=f'{app_name} {__version__}',
                    page_icon="⚗️",
@@ -39,7 +41,7 @@ st.set_page_config(page_title=f'{app_name} {__version__}',
 # session state
 ss = st.session_state
 
-ss.openai_api_key = os.getenv('OPENAI_API_KEY')
+ss.openai_api_key = os.environ['OPENAI_API_KEY']
 
 ss.path = PATH
 
