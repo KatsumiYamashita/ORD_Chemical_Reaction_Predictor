@@ -1,2 +1,7 @@
 [theme]
-base="dark"
+primaryColor = "#ff0000" # 赤
+backgroundColor = "#262730"
+secondaryBackgroundColor = "#262730" 
+textColor = "#FFFFFF" # 白
+font = "sans serif"
+
