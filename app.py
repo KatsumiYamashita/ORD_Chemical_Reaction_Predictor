@@ -21,7 +21,7 @@ DEFAULT_A = r"CC1=NN(C=C1NC2=NC=C(C(=C2)I)C(F)(F)F)C"
 
 DEFAULT_B = r"CONC(=O)C1=CC=CC=C1N"
 
-PATH = './ord_datasets/ord_datasets_csv/df_SmilesMACCSFpsID.pickle'
+PATH = './ord_datasets/df_SmilesMACCSFpsID.pickle'
 
 PROPERTIES = ['IUPACName',
               'MolecularFormula',
