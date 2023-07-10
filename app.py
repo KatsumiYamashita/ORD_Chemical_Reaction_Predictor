@@ -34,12 +34,13 @@ PATH = './ord_datasets/df_SmilesMACCSFpsID.pickle'
 
 PROPERTIES = ['IUPACName', 'MolecularFormula', 'MolecularWeight', 'XLogP', 'TPSA', 'CanonicalSMILES']
 
-#OPENAI_API_KEY =    #os.environ('OPENAI_API_KEY')  #= st.secrets['OPENAI_API_KEY']
+#OPENAI_API_KEY =    #
+os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 
 # session state
 ss = st.session_state
 
-ss.openai_api_key = OPENAI_API_KEY #os.environ['OPENAI_API_KEY']
+ss.openai_api_key = os.environ['OPENAI_API_KEY']
 
 ss.path = PATH
 
