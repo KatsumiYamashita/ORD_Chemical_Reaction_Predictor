@@ -27,30 +27,25 @@ st.set_page_config(
 
 # CONSTANTS
 DEFAULT_A = r"Cc1nn(C)cc1Nc1cc(I)c(C(F)(F)F)cn1"
-
 DEFAULT_B = r"CONC(=O)c1ccccc1N"
-
 PATH = './ord_datasets/df_SmilesMACCSFpsID.pickle'
-
 PROPERTIES = ['IUPACName', 'MolecularFormula', 'MolecularWeight', 'XLogP', 'TPSA', 'CanonicalSMILES']
 
-#OPENAI_API_KEY =    #
+# OPENAI_API_KEY
 os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 
 # session state
 ss = st.session_state
-
-ss.openai_api_key = os.environ['OPENAI_API_KEY']
-
-ss.path = PATH
-
-ss.properties = PROPERTIES
 
 if "reactant_A" not in ss:
     ss.reactant_A = DEFAULT_A
 
 if "reactant_B" not in ss:
     ss.reactant_B = DEFAULT_B
+
+ss.path = PATH
+ss.openai_api_key = os.environ['OPENAI_API_KEY']
+ss.properties = PROPERTIES
 
 def spacer(n=2, line=False, next_n=0):
 	for _ in range(n):
@@ -204,9 +199,9 @@ with st.sidebar:
     app_info()
 
 # データセットをロードする
-df_smiles_maccsfps_id = load_data(ss.path)
-nd_Amaccs = df_smiles_maccsfps_id.loc[:, "maccs_A"].values
-nd_Bmaccs = df_smiles_maccsfps_id.loc[:, "maccs_B"].values
+ss.df_smiles_maccsfps_id = load_data(ss.path)
+ss.nd_Amaccs = ss.df_smiles_maccsfps_id.loc[:, "maccs_A"].values
+ss.nd_Bmaccs = ss.df_smiles_maccsfps_id.loc[:, "maccs_B"].values
 
 # OpenAI API Keyの認証を行なう
 openai.api_key = ss.openai_api_key
@@ -216,26 +211,20 @@ col_A, col_B = st.columns(2, gap="medium")
 
 with col_A:
 
-    reactant_A_smiles = enter_reactant("A", ss.reactant_A)
-    ss.reactant_A = reactant_A_smiles
-        
-    ss.df_A_pcp = get_info_reactants(reactant_A_smiles)
+    ss.reactant_A = enter_reactant("A", ss.reactant_A)
+    ss.df_A_pcp = get_info_reactants(ss.reactant_A)
     cid_A = ss.df_A_pcp.columns
-    url_A =f"https://pubchem.ncbi.nlm.nih.gov/compound/{str(cid_A[0])}"
-    
-    st.write(f"'Reactant A' Info from [PubChem]({url_A}):")
+    ss.url_A =f"https://pubchem.ncbi.nlm.nih.gov/compound/{str(cid_A[0])}"
+    st.write(f"'Reactant A' Info from [PubChem]({ss.url_A}):")
     st.table(ss.df_A_pcp)
 
 with col_B:
         
-    reactant_B_smiles = enter_reactant("B", ss.reactant_B)
-    ss.reactant_B = reactant_B_smiles
-        
-    ss.df_B_pcp = get_info_reactants(reactant_B_smiles)
+    ss.reactant_B = enter_reactant("B", ss.reactant_B)
+    ss.df_B_pcp = get_info_reactants(ss.reactant_B)
     cid_B = ss.df_B_pcp.columns
-    url_B =f"https://pubchem.ncbi.nlm.nih.gov/compound/{str(cid_B[0])}"
-    
-    st.write(f"'Reactant B' Info from [PubChem]({url_B}):")
+    ss.url_B =f"https://pubchem.ncbi.nlm.nih.gov/compound/{str(cid_B[0])}"
+    st.write(f"'Reactant A' Info from [PubChem]({ss.url_B}):")
     st.table(ss.df_B_pcp)
 
 # テスト化合物ABのmaccs fpsを生成
@@ -261,15 +250,15 @@ def tnmt_similarity(nd_Amaccs,
 
 # テスト分子とのTANIMOTO係数を計算する
 uf_TNMTSimilarity = np.frompyfunc(tnmt_similarity, 2, 2)
-nd_tnmt_A, nd_tnmt_B = uf_TNMTSimilarity(nd_Amaccs, nd_Bmaccs)
+ss.nd_tnmt_A, ss.nd_tnmt_B = uf_TNMTSimilarity(ss.nd_Amaccs, ss.nd_Bmaccs)
 
 # トレーニングデータの取得
 # トレーニングデータ数は選択できるようにしたい
 str_training_dataset,\
 df_training_dataset,\
-= main.extract_training_data(nd_tnmt_A,
-                             nd_tnmt_B,
-                             df_smiles_maccsfps_id,
+= main.extract_training_data(ss.nd_tnmt_A,
+                             ss.nd_tnmt_B,
+                             ss.df_smiles_maccsfps_id,
                              20,
                              )
 
