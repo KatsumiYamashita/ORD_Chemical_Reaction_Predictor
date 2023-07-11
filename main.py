@@ -57,9 +57,9 @@ def get_prodY_SMILES(test_A_smiles,\
     question =\
     f"Synthesize compound 'Y' from the corresponding compound 'A' and 'B' below.\
     Answer 5 different each other candidates of 'y1 to y5' in this format, 'Y1:y1, Y2:y2, Y3:y3, Y4:y4, Y5:y5'.\
-    From training dataset, learn which parts of A and B are more likely to change to generate the corresppoing Y.\
-    Each your answered Y should preferably be the result of a different combination of sites that A and B might react with.\
     If {test_A_smiles} and {test_B_smiles} are in {training_dataset}, the corresponding 'Y' should be included in y1-y5.\
+    From training dataset, learn which elements (alphabet) of A and B are more likely to react for providing the corresppoing Y.\
+    Each your answered Y should preferably be the result of a different combination of sites that A and B might react with.\
     \
     \
     {training_dataset}\
