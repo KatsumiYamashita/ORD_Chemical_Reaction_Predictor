@@ -1,11 +1,10 @@
-**このアプリケーションは [田中　統](https://www.codechrysalis.io/) 氏のコーチンングプログラムに参加して作成しました.**
+**このアプリケーションは [田中　統](https://suguru-tanaka.com/) 氏のコーチンングプログラムに参加して作成しました.**
 
 # ORD Finder: A + B → Y   ⚗️
 
 アプリは [hugging face](https://huggingface.co/spaces/kumasan681104/React_St) からご覧ください!
 
-![image](https://github.com/nouvelle/coffee-time/blob/master/images/desktop.png?raw=true)
-![image](https://github.com/nouvelle/coffee-time/blob/master/images/smartphone.png?raw=true)
+![image](https://github.com/KatsumiYamashita/React_ABY/blob/main/img/ord_finder_title.jpg?raw=true)
 
 1. [About](#About)
 1. [Development](#Development)
