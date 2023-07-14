@@ -1,6 +1,6 @@
 **このアプリケーションは [田中　統](https://suguru-tanaka.com/) 氏のコーチンングプログラムに参加して作成しました.**
 
-# ORD Finder: A + B → Y   ⚗️
+# ORD Chemical Reaction Finder: ⚗️
 
 アプリは [hugging face](https://huggingface.co/spaces/kumasan681104/React_St) からご覧ください!
 
@@ -16,10 +16,6 @@ Even when the compound is not present in the dataset, app attempts products pred
 
 # Database
 
-# Technology used
-
-This software uses the following open source packages:
-![image](https://github.com/nouvelle/coffee-time/blob/master/images/technology.png?raw=true)
 
 # Future features
 
@@ -34,6 +30,11 @@ I will be adding more function.
 # Contributing
 
 Pull requests are welcome!! 😊
+
+# References
+
+This app uses the following open source packages:
+![image](https://github.com/nouvelle/coffee-time/blob/master/images/technology.png?raw=true)
 
 # License
 
