@@ -1,7 +1,7 @@
 [theme]
-primaryColor = "#ff0000" # 赤
-backgroundColor = "#262730"
-secondaryBackgroundColor = "#262730" 
-textColor = "#FFFFFF" # 白
+primaryColor = "#396FE0" 
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#CDE0DD" 
+textColor = "#010110" 
 font = "sans serif"
 
