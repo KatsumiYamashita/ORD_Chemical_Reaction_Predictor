@@ -30,7 +30,6 @@ A simple usage of the app is as follows;
 3. Your compound information can be retrieved from PubChem database!
 4. Press the "Find" button to explore reaction data from the Open Reaction Database!
 
-
 # 将来的機能　(Future features)
 
 現在は2つの反応物間の反応データのみを表示しています.
