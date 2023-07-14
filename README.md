@@ -3,6 +3,7 @@
 # ORD Chemical Reaction Finder: 
 
 アプリは [hugging face](https://huggingface.co/spaces/kumasan681104/React_St) からご覧ください!
+
 You can check out the app on [hugging face](https://huggingface.co/spaces/kumasan681104/React_St) !
 
 ![image](https://github.com/KatsumiYamashita/React_ABY/blob/main/img/ord_finder_title.jpg?raw=true)
@@ -32,7 +33,7 @@ A simple usage of the app is as follows;
 
 # 将来的機能　(Future features)
 
-現在, 2つの反応物間
+現在は2つの反応物間の反応データのみを表示しています.
 さらに機能を追加していきます。
 
 - [ ] より高速な応答を実現します。
@@ -48,15 +49,20 @@ I will be adding more function.
 - [ ] Enables searching by reaction.
 - [ ] Improve product prediction performance.
 
+# Packages
+
+This app uses the following packages:
+
+・[The Open Reaction Database](https://docs.open-reaction-database.org/en/latest/)
+
+・[streamlit-ketcher](https://github-com.translate.goog/mik-laj/streamlit-ketcher?ref=blog.streamlit.io&_x_tr_sl=en&_x_tr_tl=ja&_x_tr_hl=ja&_x_tr_pto=sc)
+
+・[PubChem](https://pubchem.ncbi.nlm.nih.gov/)
+
+・[OpenAI](https://platform.openai.com/overview)
+
 # Contributing
 
 Pull requests are welcome!! 😊
 
-# 参考 References
-
-This app uses the following open source packages:
-![image](https://github.com/nouvelle/coffee-time/blob/master/images/technology.png?raw=true)
-
 # License
-
-[MIT](https://choosealicense.com/licenses/mit/)
