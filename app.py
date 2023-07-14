@@ -8,14 +8,14 @@ import pickle
 import streamlit as st
 import warnings
 
-#from config import OPENAI_API_KEY
+from config import OPENAI_API_KEY
 from streamlit_ketcher import st_ketcher
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
 from rdkit.Chem.Draw import rdMolDraw2D
 
 __version__ = "0.0.0"
-app_name = "React_ABY"
+app_name = "ORD Chemical Reaction Finder"
 
 # Application tub
 st.set_page_config(
@@ -32,7 +32,7 @@ PATH = './ord_datasets/df_SmilesMACCSFpsID.pickle'
 PROPERTIES = ['IUPACName', 'MolecularFormula', 'MolecularWeight', 'XLogP', 'TPSA', 'CanonicalSMILES']
 
 # OPENAI_API_KEY
-os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
+# os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
 
 # session state
 ss = st.session_state
@@ -44,7 +44,7 @@ if "reactant_B" not in ss:
     ss.reactant_B = DEFAULT_B
 
 ss.path = PATH
-ss.openai_api_key = os.environ['OPENAI_API_KEY']
+ss.openai_api_key = OPENAI_API_KEY #os.environ['OPENAI_API_KEY']
 ss.properties = PROPERTIES
 
 def spacer(n=2, line=False, next_n=0):
@@ -58,7 +58,7 @@ def spacer(n=2, line=False, next_n=0):
 def app_info():
     st.markdown(f"""
                 
-	# React ABY
+	# {app_name}
 	version {__version__}
  
 	""")
@@ -189,11 +189,6 @@ def show_report(smiles_A, smiles_B, df_Y, df_training_dataset):
 
     return show_report
 
-# Application title and description
-st.title("React: A + B → Y")
-
-st.write("'React ABY' searches organic reaction data containing your input compounds from the dataset of over 300,000 entries in [the Open Reaction Database](https://open-reaction-database.org/client/browse).",
-         "Even when a compound is not present in the dataset, app attempts products prediction using GPT-3.5 trained on reaction SMILES.")
 
 with st.sidebar:
     app_info()
@@ -204,7 +199,17 @@ ss.nd_Amaccs = ss.df_smiles_maccsfps_id.loc[:, "maccs_A"].values
 ss.nd_Bmaccs = ss.df_smiles_maccsfps_id.loc[:, "maccs_B"].values
 
 # OpenAI API Keyの認証を行なう
-openai.api_key = ss.openai_api_key
+# openai.api_key = ss.openai_api_key
+
+# Application title and description
+st.title(f"{app_name}")
+
+st.write("This App searches organic reaction data containing your input compounds from the dataset of over 300,000 entries in [the Open Reaction Database](https://open-reaction-database.org/client/browse).",
+         "Even when the compound is not present in the dataset, app attempts products prediction using GPT-3.5 trained on reaction SMILES.")
+
+spacer(2)
+
+st.markdown("### 1.  検索したい化合物を入力してください !! ")
 
 # streamlit appの表示を２分割するためのカラムを定義する
 col_A, col_B = st.columns(2, gap="medium")
@@ -262,24 +267,24 @@ df_training_dataset,\
                              20,
                              )
 
-predict_button = st.button("Pretict !", key=1)
+spacer(2)
+
+st.markdown("### 2.  ボタンを押して反応データを探してみましょう !! ")
+
+predict_button = st.button("Find !", key=1)
 
 # 化合物ABを反応させる (Yを予測させる)
 if predict_button:
-    #try
+    #try:
     response, df_Y =\
     main.get_prodY_SMILES(ss.reactant_A,
-                          ss.reactant_B,
-                          str_training_dataset)
-    
-    #st.dataframe(df_Y)
-    #st.dataframe(response)
-    #ss.best_Y = df_Y 
+                            ss.reactant_B,
+                            str_training_dataset) 
             
     show_report(ss.reactant_A,
-                ss.reactant_B,
-                df_Y,
-                df_training_dataset)
+                    ss.reactant_B,
+                    df_Y,
+                    df_training_dataset)
 
     #except:
 
