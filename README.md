@@ -1,4 +1,4 @@
-**このアプリケーションは [田中　統](https://suguru-tanaka.com/) 氏のコーチンングプログラムに参加して作成しました.**
+**このアプリケーションは [田中　統](https://suguru-tanaka.com/) 氏のコーチングプログラムに参加して作成しました.**
 
 # ORD Chemical Reaction Finder: 
 
