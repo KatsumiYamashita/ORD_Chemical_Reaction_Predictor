@@ -38,7 +38,7 @@ I will be adding more function.
 
 - [ ] Improve product prediction performance.
 
-# Packages
+## Packages
 
 This app uses the following packages:
 
@@ -56,7 +56,7 @@ This app uses the following packages:
 
 ・[Python](https://www.python.org/)
 
-# Acknowledgment
+## Acknowledgment
 
 [Suguru Tanaka](https://suguru-tanaka.com/)
 
@@ -66,4 +66,4 @@ I am truly grateful for his passionate guidance.
 2023.07.17
 Katsumi Yamashita
 
-# License
+## License
