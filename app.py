@@ -15,7 +15,7 @@ from rdkit.Chem import AllChem
 from rdkit.Chem.Draw import rdMolDraw2D
 
 __version__ = "0.0.0"
-app_name = "ORD Chemical Reaction Finder"
+app_name = "ORD Chemical Reaction Predictor"
 
 # Application tub
 st.set_page_config(
@@ -209,7 +209,7 @@ st.write("This App searches organic reaction data containing your input compound
 
 spacer(2)
 
-st.markdown("### 1.  検索したい化合物を入力してください !! ")
+st.markdown("### 1.  Draw your compounds ! ")
 
 # streamlit appの表示を２分割するためのカラムを定義する
 col_A, col_B = st.columns(2, gap="medium")
@@ -269,27 +269,27 @@ df_training_dataset,\
 
 spacer(2)
 
-st.markdown("### 2.  ボタンを押して反応データを探してみましょう !! ")
+st.markdown("### 2.  Press the 'Prediction' button !! ")
 
-predict_button = st.button("Find !", key=1)
+predict_button = st.button("Prediction !", key=1)
 
 # 化合物ABを反応させる (Yを予測させる)
 if predict_button:
-    #try:
-    response, df_Y =\
-    main.get_prodY_SMILES(ss.reactant_A,
-                            ss.reactant_B,
-                            str_training_dataset) 
-            
-    show_report(ss.reactant_A,
-                    ss.reactant_B,
-                    df_Y,
-                    df_training_dataset)
+    try:
+        response, df_Y =\
+        main.get_prodY_SMILES(ss.reactant_A,
+                                ss.reactant_B,
+                                str_training_dataset) 
+                
+        show_report(ss.reactant_A,
+                        ss.reactant_B,
+                        df_Y,
+                        df_training_dataset)
 
-    #except:
+    except:
 
-        #st.markdown("### Sorry...")
-        #st.markdown("### Possible 'Y' could not be predicted.")  
+        st.markdown("### Sorry...")
+        st.markdown("### Possible 'Y' could not be predicted.")  
         #st.markdown("### 👈 Adjust the parameters and try again!!")
     
 else:
