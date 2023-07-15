@@ -10,8 +10,9 @@ You can check out the app on [hugging face](https://huggingface.co/spaces/kumasa
 
 # このアプリについて (About)
 
-このアプリケーションでは, [the Open Reaction Database](https://open-reaction-database.org/client/browse)の300,000を超える反応データから, あなたが入力した化合物を含む反応を検索できます.
-化合物がデータセットに含まれなくても, 反応SMILESでトレーニングされたGPT-3.5で生成物の予測を行なうことができます.
+このアプリでは, [the Open Reaction Database](https://open-reaction-database.org/client/browse)の300,000を超える有機合成反応データから,
+あなたが入力した化合物を含む反応を検索できます.
+化合物がデータセットに含まれなくても, 類似化合物の反応SMILESをトレーニングしたGPT-3.5を使って生成物の予測を試みました.
 
 This App can find organic reaction data containing your input compounds from the dataset of over 300,000 entries in [the Open Reaction Database](https://open-reaction-database.org/client/browse). 
 Even when the compound is not present in the dataset, app attempts products prediction using GPT-3.5 trained on reaction SMILES.
@@ -20,15 +21,14 @@ Even when the compound is not present in the dataset, app attempts products pred
 
 アプリの簡単な使用方法は以下の通りです;
 1. まずは, [アプリ](https://huggingface.co/spaces/kumasan681104/React_St) にアクセスしましょう!
-2. 反応を検索したい二つの化合物の構造を描きましょう!
-3. 化合物の情報はPubChemのデータベースから取得できます!
-4. "Find"ボタンを押してthe Open Reaction Databaseから反応データを探索しましょう!
+2. 反応を検索したい二つの化合物の構造を描きましょう! 化合物の情報はPubChemのデータベースから取得できます.
+3. "Find"ボタンを押してthe Open Reaction Databaseから反応データを探索しましょう!
 
 A simple usage of the app is as follows;
 1. Let's access [app](https://huggingface.co/spaces/kumasan681104/React_St)!
-2. Draw the structures of the two compounds whose reactions you want to search for!
-3. Your compound information can be retrieved from PubChem database!
-4. Press the "Find" button to explore reaction data from the Open Reaction Database!
+2. Draw the structures of the two compounds whose reactions you want to search for! 
+   Your compound information can be retrieved from PubChem database!
+3. Press the "Find" button to explore reaction data from the Open Reaction Database!
 
 # 将来的機能　(Future features)
 
