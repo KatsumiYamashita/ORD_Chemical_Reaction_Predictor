@@ -6,7 +6,7 @@
 
 You can check out the app on [hugging face](https://huggingface.co/spaces/kumasan681104/React_St) !
 
-![image](https://github.com/KatsumiYamashita/React_ABY/blob/main/img/ord_finder_title.jpg?raw=true)
+![image](https://github.com/KatsumiYamashita/React_ABY/blob/main/img/ord_finder_title_white.jpg?raw=true)
 
 # このアプリについて (About)
 
