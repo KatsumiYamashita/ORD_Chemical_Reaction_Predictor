@@ -1,5 +1,3 @@
-**このアプリケーションは [田中　統](https://suguru-tanaka.com/) 氏のコーチングプログラムに参加して作成しました.**
-
 # ORD Chemical Reaction Finder: 
 
 アプリは [hugging face](https://huggingface.co/spaces/kumasan681104/React_St) からご覧ください!
@@ -14,7 +12,7 @@ You can check out the app on [hugging face](https://huggingface.co/spaces/kumasa
 あなたが入力した化合物を含む反応を検索できます.
 化合物がデータセットに含まれなくても, 類似化合物の反応SMILESをトレーニングしたGPT-3.5を使って生成物の予測を試みました.
 
-This App can find organic reaction data containing your input compounds from the dataset of over 300,000 entries in [the Open Reaction Database](https://open-reaction-database.org/client/browse). 
+This app can find organic reaction data containing your input compounds from the dataset of over 300,000 entries in [the Open Reaction Database](https://open-reaction-database.org/client/browse). 
 Even when the compound is not present in the dataset, app attempts products prediction using GPT-3.5 trained on reaction SMILES.
 
 # 使用方法 (Usage)
@@ -60,8 +58,14 @@ This app uses the following packages:
 
 ・[OpenAI](https://platform.openai.com/overview)
 
-# Contributing
+# Acknowledgment
 
-Pull requests are welcome!! 😊
+[田中　統](https://suguru-tanaka.com/)
+
+このアプリケーションは田中氏のコーチングプログラムに参加して制作しました. 
+素人の私に対しても
+
+[Suguru Tanaka](https://suguru-tanaka.com/)
+
 
 # License
