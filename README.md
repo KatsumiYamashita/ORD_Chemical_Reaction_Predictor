@@ -4,7 +4,7 @@
 
 You can check out the app on [hugging face](https://huggingface.co/spaces/kumasan681104/React_St) !
 
-![movie](https://github.com/KatsumiYamashita/ORD_Chemical_Reaction_Predictor/assets/119605151/84739b88-825f-4ab6-8d8d-27d00435b170)
+[![img](https://github.com/KatsumiYamashita/ORD_Chemical_Reaction_Predictor/blob/main/img/ord_finder_title_white.jpg)](https://github.com/KatsumiYamashita/ORD_Chemical_Reaction_Predictor/assets/119605151/84739b88-825f-4ab6-8d8d-27d00435b170)
 
 ## About
 
