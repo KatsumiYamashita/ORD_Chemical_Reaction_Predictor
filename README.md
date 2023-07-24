@@ -67,3 +67,5 @@ I am truly grateful for his passionate guidance.
 Katsumi Yamashita
 
 ## License
+
+This application is subject to ORD's CC-BY-SA license and Streamlit's Apache License 2.0.
